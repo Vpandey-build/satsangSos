@@ -26,13 +26,13 @@ main{padding:12px 16px 40px}
 .card div{color:var(--mu);font-size:13px;margin:4px 0 10px}.card .a{display:flex;gap:8px}
 .pill{padding:9px 16px;border-radius:10px;background:var(--sf);border:1px solid var(--bd)}.pill.p{background:var(--ac);color:#22150b;border-color:var(--ac);font-weight:600}
 .lh{display:flex;justify-content:space-between;align-items:center;color:var(--mu);font-size:13px;padding:2px 2px 8px}
-.row{display:grid;grid-template-columns:30px 1fr auto;gap:2px 8px;width:100%;text-align:left;padding:12px 6px;border-bottom:1px solid var(--bd);align-items:center;scroll-margin-top:350px}
+.row{display:grid;grid-template-columns:30px 1fr auto 34px;gap:2px 8px;width:100%;text-align:left;padding:12px 6px;border-bottom:1px solid var(--bd);align-items:center;scroll-margin-top:350px}
 .row.on{background:#2f2218;border-radius:10px}.row.on .tt{color:var(--ac)}
 .num{color:var(--mu);font-size:13px}.tt{font-size:14.5px}.st{font-size:11.5px;color:var(--mu);white-space:nowrap}.st.d{color:var(--ac);font-weight:600}
-.bar{grid-column:2/4;height:3px;background:var(--bd);border-radius:2px;overflow:hidden;display:block}.bar u{display:block;height:100%;background:var(--ac)}
+.bar{grid-column:2/5;height:3px;background:var(--bd);border-radius:2px;overflow:hidden;display:block}.bar u{display:block;height:100%;background:var(--ac)}
 .msg{padding:26px 10px;text-align:center;color:var(--mu)}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:flex-end}.ov[hidden]{display:none}
-.sh{background:var(--sf);width:100%;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.sh{max-height:88vh;overflow:auto;background:var(--sf);width:100%;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
 .sh h2{margin:0 0 10px;font-size:17px}.sh p{color:var(--mu);font-size:12.5px;margin:6px 0}
 input{width:100%;padding:12px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font:inherit;margin:6px 0}
 .sh .pill{margin:6px 6px 0 0}
@@ -40,6 +40,8 @@ input{width:100%;padding:12px;background:var(--bg);border:1px solid var(--bd);bo
 #tl b{font-weight:400;font-size:15px;max-width:300px;color:#9b8878}#tl small{font-size:12px}
 #tlu{width:140px;height:140px;border-radius:50%;background:conic-gradient(#e8a24a var(--p,0deg),#2a2018 0);display:flex;align-items:center;justify-content:center;padding:0;touch-action:none}
 #tlu span{width:122px;height:122px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:#9b8878;font-size:13px}
+.star{color:var(--mu);display:flex;align-items:center;justify-content:center;padding:4px}.star.on{color:var(--ac)}.star svg{width:20px;height:20px}.star.on svg{fill:currentColor}
+.mr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px;color:var(--mu)}
 </style></head><body>
 <header><h1><span>&#10047;</span> Satsang Library</h1><button class="cb" id="gear" aria-label="Settings" style="flex-direction:row;padding:8px 12px"><svg viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.5"/></svg></button></header>
 <nav class="tabs" id="tabs"></nav>
@@ -50,15 +52,17 @@ input{width:100%;padding:12px;background:var(--bg);border:1px solid var(--bd);bo
 </div>
 <main>
  <div class="card" id="rc" hidden><b>Continue listening?</b><div id="ri"></div><div class="a"><button class="pill p" id="rb">Resume</button><button class="pill" id="rd">Dismiss</button></div></div>
- <div class="lh"><span id="lh"></span><button class="pill" id="rf" style="padding:6px 12px;font-size:12px">Refresh</button></div>
+ <div class="lh"><span id="lh"></span><span style="display:flex;gap:6px"><button class="pill" id="ad" style="padding:6px 12px;font-size:12px">+ Add</button><button class="pill" id="rf" style="padding:6px 12px;font-size:12px">Refresh</button></span></div>
  <div id="list"></div><div class="msg" id="st"></div>
 </main>
 <div class="ov" id="ov" hidden><div class="sh">
  <h2>Settings</h2>
  <p>Optional YouTube API key: loads titles faster. Everything works without it.</p>
  <input id="ak" placeholder="Paste API key (optional)" autocomplete="off">
- <button class="pill p" id="sk">Save key</button><button class="pill" id="rp">Reset all progress</button><button class="pill" id="cc">Clear saved lists</button><button class="pill" id="cx">Close</button>
+ <button class="pill p" id="sk">Save key</button><button class="pill" id="rp">Reset all progress</button><button class="pill" id="cc">Clear saved lists</button><button class="pill" id="ex">Export backup</button><button class="pill" id="im">Import backup</button><button class="pill" id="cx">Close</button>
 </div></div>
+<div class="ov" id="ov2" hidden><div class="sh"><h2 id="o2t">Playlists</h2><p>Paste a YouTube playlist or video link. It is added to the top of this tab.</p><input id="lnk" placeholder="https://youtube.com/playlist?list=..."><button class="pill p" id="la">Add</button><button class="pill" id="lx">Close</button><p id="lm"></p><div id="lst"></div></div></div>
+<input type="file" id="imf" accept="application/json" hidden>
 <div id="tl" hidden><small>Touch locked · music keeps playing</small><b id="tlt"></b><button id="tlu" aria-label="Hold to unlock"><span><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>Hold to unlock</span></button><small>Press and hold the circle for 2 seconds</small></div>
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
@@ -66,10 +70,10 @@ const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>
 const K='sat2_',gs=(k,d)=>{try{return JSON.parse(localStorage.getItem(K+k))??d}catch{return d}},ss=(k,v)=>{try{localStorage.setItem(K+k,JSON.stringify(v))}catch{}};
 const R='PLBMCmxwJKwVt_JobavyvGiEq1NCFI3ZxO',D='PLHzYLkUkirjTGJzpXpbZNCn9aNBOLlHMs',KP='PLBMCmxwJKwVsgOE4TJ4ONR_3T8c8id2VD';
 const SEC=[{n:'Rajinder Singh Ji',pls:[R]},{n:'Darshan Singh Ji',pls:[D]},{n:'Kirpal Singh Ji',pls:[KP]},
-{n:'Mix (satsang)',pls:[R,D,KP,'PLBMCmxwJKwVvql9ftLuDsYqTlfLhcTcLx','PLBMCmxwJKwVsHwo6c6oL5M8Z8TRjXgUgE','PLBMCmxwJKwVse1BkOeGAUZG3IzdtRlEmh','PLBMCmxwJKwVuLh3lO3QMoZoIbo0XdzJhv']},
+{n:'Mix (satsang)',mixOf:[0,1,2],pls:[R,D,KP,'PLBMCmxwJKwVvql9ftLuDsYqTlfLhcTcLx','PLBMCmxwJKwVsHwo6c6oL5M8Z8TRjXgUgE','PLBMCmxwJKwVse1BkOeGAUZG3IzdtRlEmh','PLBMCmxwJKwVuLh3lO3QMoZoIbo0XdzJhv']},
 {n:'Shorts',short:1,pls:['PLBMCmxwJKwVtjH8wDgTrQv21bUEz0yBzW','PLBMCmxwJKwVsrpsAqyzAIjRQvBOu5yd4q','PLBMCmxwJKwVurqVjrweRykPmFgrUI4Klm']},
-{n:'Bhajan',pls:['PLBMCmxwJKwVtGEJxepC1anyaO9bIbTjiF','PLBMCmxwJKwVtjGCMKTw8stKvK-hyCMKS3']}];
-let TT=gs('tt',{}),PR=gs('pr',{}),LS=gs('ls',{}),key=gs('api',''),wakeOn=gs('wake',true);
+{n:'Bhajan',pls:['PLBMCmxwJKwVtGEJxepC1anyaO9bIbTjiF','PLBMCmxwJKwVtjGCMKTw8stKvK-hyCMKS3']},{n:'\u2605 Favourites',fav:1,pls:[]}];
+let UD=gs('ud',{}),FAV=gs('fav',[]),TT=gs('tt',{}),PR=gs('pr',{}),LS=gs('ls',{}),key=gs('api',''),wakeOn=gs('wake',true);
 let tlOn=false,errs=0,wp=0,cur=null,sec=0,q=[],idx=-1,shuf=false,played=new Set(),hist=[],P,wl=null,chain=Promise.resolve(),tm;
 const I={prev:'<path d="M19 5L9 12l10 7zM5 5v14"/>',next:'<path d="M5 5l10 7-10 7zM19 5v14"/>',play:'<path d="M7 4l13 8-13 8z"/>',pause:'<path d="M8 5v14M16 5v14" stroke-width="3"/>',shuf:'<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>'};
 const ic=n=>'<svg viewBox="0 0 24 24">'+I[n]+'</svg>';
@@ -84,8 +88,9 @@ function ctl(){const st=P?.getPlayerState?.()===1;$('#ctl').innerHTML=`<button c
  $('#sf').onclick=()=>{shuf=!shuf;played.clear();if(idx>=0)played.add(q[idx]);if(shuf&&idx<0)next();ctl()};
  $('#wk').onclick=()=>{wakeOn=!wakeOn;ss('wake',wakeOn);wakeOn?(P?.getPlayerState?.()===1&&wake()):unwake();ctl()}}
 function lab(id){const p=PR[id];if(SEC[sec].short)return p?.done?['\u2713 Played'+(p.n>1?' · '+p.n+'\u00d7':''),0,1]:['',0];if(!p)return['',0];if(p.done)return['\u2713 Done'+(p.n>1?' · '+p.n+'\u00d7':''),100,1];return[p.p>0?p.p+'%':'',p.p||0]}
-function rowHtml(id,i){const[l,w,d]=lab(id);return `<button class="row ${i===idx?'on':''}" data-i="${i}" data-id="${id}"><span class="num">${i+1}</span><span class="tt" id="t_${id}">${esc(ttl(id,i))}</span><span class="st ${d?'d':''}">${l}</span><i class="bar"><u style="width:${w}%"></u></i></button>`}
-function render(){const s=SEC[sec];$('#lh').textContent=s.n+' · '+q.length+' videos';$('#list').innerHTML=q.map(rowHtml).join('');$('#list').querySelectorAll('.row').forEach(b=>b.onclick=()=>{shuf=false;ctl();playAt(+b.dataset.i)});}
+const starSvg='<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',star=id=>`<span class="star ${FAV.includes(id)?'on':''}" data-id="${id}">${starSvg}</span>`;
+function rowHtml(id,i){const[l,w,d]=lab(id);return `<button class="row ${i===idx?'on':''}" data-i="${i}" data-id="${id}"><span class="num">${i+1}</span><span class="tt" id="t_${id}">${esc(ttl(id,i))}</span><span class="st ${d?'d':''}">${l}</span>${star(id)}<i class="bar"><u style="width:${w}%"></u></i></button>`}
+function render(){const s=SEC[sec];$('#lh').textContent=s.n+' · '+q.length+' videos';$('#list').innerHTML=q.map(rowHtml).join('');$('#list').querySelectorAll('.row').forEach(b=>b.onclick=e=>{if(e.target.closest('.star')){toggleFav(b.dataset.id);return}shuf=false;ctl();playAt(+b.dataset.i)});}
 function paint(id){const b=$('#list').querySelector(`[data-id="${id}"]`);if(!b)return;const[l,w,d]=lab(id);const s=b.querySelector('.st');s.textContent=l;s.className='st '+(d?'d':'');b.querySelector('u').style.width=w+'%'}
 
 function wait(){return new Promise(r=>{let n=0;const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);r()}else if(++n===80)setSt('Cannot reach YouTube. Check your internet.')},250)})}
@@ -96,15 +101,17 @@ async function fetchPl(pl){
  if(key){try{let tok='';do{const u=new URL('https://www.googleapis.com/youtube/v3/playlistItems');u.search=new URLSearchParams({part:'snippet',playlistId:pl,maxResults:50,key,...(tok?{pageToken:tok}:{})});const r=await fetch(u);if(!r.ok)throw 0;const d=await r.json();for(const it of d.items||[]){const id=it.snippet?.resourceId?.videoId,t=it.snippet?.title;if(id&&t!=='Private video'&&t!=='Deleted video'){out.push(id);TT[id]=t}}tok=d.nextPageToken||''}while(tok);svT()}catch{out=[]}}
  if(!out.length)out=await viaPlayer(pl);
  out=[...new Set(out)];if(out.length){LS[pl]=out;ss('ls',LS)}return out}
+const ents=i=>{const s=SEC[i],g=j=>UD[SEC[j].n]||[];return[...g(i),...s.pls.map(id=>({t:'p',id})),...(s.mixOf||[]).flatMap(g)]};
 async function loadSec(force){
- const my=sec,s=SEC[my];
- if(force){s.pls.forEach(p=>delete LS[p]);ss('ls',LS)}
- let ids=[];
- for(let n=0;n<s.pls.length;n++){
-  setSt('Loading '+(n+1)+' of '+s.pls.length+'\u2026');
-  ids.push(...await fetchPl(s.pls[n]));if(my!==sec)return;
-  q=[...new Set(ids)];idx=cur?q.indexOf(cur):-1;if(idx<0)cur=null;render()}
- setSt(q.length?'':'Could not load the list. Check internet and tap Refresh.');titles(my)}
+ const my=sec,s=SEC[my],E=ents(my);
+ if(force){E.forEach(e=>{if(e.t==='p')delete LS[e.id]});ss('ls',LS)}
+ let ids=s.fav?[...FAV]:[];
+ const tick=()=>{q=[...new Set(ids)];idx=cur?q.indexOf(cur):-1;if(idx<0)cur=null;render()};
+ tick();
+ for(let n=0;n<E.length;n++){
+  setSt('Loading '+(n+1)+' of '+E.length+'\u2026');
+  ids.push(...(E[n].t==='v'?[E[n].id]:await fetchPl(E[n].id)));if(my!==sec)return;tick()}
+ setSt(q.length?'':(s.fav?'No favourites yet. Tap the star on any satsang, or use + Add for a playlist or video.':'Could not load the list. Check internet and tap Refresh.'));titles(my)}
 async function titles(my){
  const need=q.filter(id=>!TT[id]);
  for(let i=0;i<need.length&&my===sec;i+=4){await Promise.all(need.slice(i,i+4).map(async id=>{
@@ -118,7 +125,7 @@ function playAt(i,from,noHist){
  if(!SEC[sec].short){PR[id]={...o,done:false,p:st?(o.p||0):0,t:st};ss('pr',PR)}
  P.loadVideoById({videoId:id,startSeconds:st});
  $('#list').querySelectorAll('.row.on').forEach(r=>r.classList.remove('on'));const b=$('#list').querySelector(`[data-id="${id}"]`);if(b){b.classList.add('on');paint(id);b.scrollIntoView({block:'nearest',behavior:'smooth'})}
- $('#now').innerHTML=`<small>${esc(SEC[sec].n)}${shuf?' · shuffle':''}</small><b>${esc(ttl(id,i))}</b>`;if(tlOn)$('#tlt').textContent=ttl(id,i);setMedia()}
+ $('#now').innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px"><div><small>${esc(SEC[sec].n)}${shuf?' · shuffle':''}</small><b>${esc(ttl(id,i))}</b></div>${star(id)}</div>`;if(tlOn)$('#tlt').textContent=ttl(id,i);setMedia()}
 function next(){if(!q.length)return;if(shuf){let c=q.map((_,i)=>i).filter(i=>!played.has(q[i])&&i!==idx);if(!c.length){played.clear();if(idx>=0)played.add(q[idx]);c=q.map((_,i)=>i).filter(i=>i!==idx);if(!c.length)c=[0]}playAt(c[Math.floor(Math.random()*c.length)])}else playAt(idx+1)}
 function prev(){if(!q.length)return;const t=P?.getCurrentTime?.()||0;if(t>5&&idx>=0){P.seekTo(0,true);return}const h=hist.pop();playAt(h!==undefined?h:idx-1,0,true)}
 function setMedia(){if(!('mediaSession'in navigator)||idx<0)return;navigator.mediaSession.metadata=new MediaMetadata({title:ttl(q[idx],idx),artist:SEC[sec].n,album:'Satsang Library'});const a=navigator.mediaSession;a.setActionHandler('play',()=>P.playVideo());a.setActionHandler('pause',()=>P.pauseVideo());a.setActionHandler('nexttrack',next);a.setActionHandler('previoustrack',prev)}
@@ -137,6 +144,22 @@ $('#rp').onclick=()=>{if(confirm('Reset progress for all satsangs?')){PR={};ss('
 $('#cc').onclick=()=>{LS={};ss('ls',LS);$('#ov').hidden=true;loadSec(true)};
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();unwake()}else if(P?.getPlayerState?.()===1)wake()});
 window.addEventListener('pagehide',save);setInterval(()=>{if(P?.getPlayerState?.()===1)save()},3000);
+function paintStars(){document.querySelectorAll('.star').forEach(s=>s.classList.toggle('on',FAV.includes(s.dataset.id)))}
+function toggleFav(id){const i=FAV.indexOf(id);i<0?FAV.unshift(id):FAV.splice(i,1);ss('fav',FAV);paintStars();if(SEC[sec].fav)loadSec()}
+$('#now').addEventListener('click',e=>{const s=e.target.closest('.star');if(s)toggleFav(s.dataset.id)});
+function parse(u){u=u.trim();let m=u.match(/[?&]list=([\w-]+)/);if(m)return{t:'p',id:m[1]};m=u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/);if(m)return{t:'v',id:m[1]};return/^PL[\w-]{10,}$/.test(u)?{t:'p',id:u}:/^[\w-]{11}$/.test(u)?{t:'v',id:u}:null}
+function mg(){const s=SEC[sec],u=UD[s.n]||[];$('#o2t').textContent='Add to '+s.n;
+ $('#lst').innerHTML=u.map((e,i)=>`<div class="mr"><span>${e.t==='p'?'Playlist · '+(LS[e.id]?LS[e.id].length+' videos · ':'')+e.id.slice(-6):'Video · '+esc(TT[e.id]||e.id)}</span><button class="pill" data-i="${i}">Remove</button></div>`).join('')+s.pls.map(id=>`<div class="mr"><span>Built-in · ${LS[id]?LS[id].length+' videos · ':''}${id.slice(-6)}</span></div>`).join('');
+ $('#lst').querySelectorAll('button').forEach(b=>b.onclick=()=>{u.splice(+b.dataset.i,1);ss('ud',UD);mg();loadSec()})}
+$('#ad').onclick=()=>{$('#lnk').value='';$('#lm').textContent='';mg();$('#ov2').hidden=false};$('#lx').onclick=()=>$('#ov2').hidden=true;
+$('#la').onclick=async()=>{const e=parse($('#lnk').value),s=SEC[sec],m=$('#lm');if(!e){m.textContent='That does not look like a YouTube playlist or video link.';return}
+ const u=UD[s.n]=UD[s.n]||[];if(u.some(x=>x.id===e.id)||s.pls.includes(e.id)){m.textContent='Already in this tab.';return}
+ m.textContent='Checking\u2026';
+ if(e.t==='p'){const ids=await fetchPl(e.id);if(!ids.length){m.textContent='Could not load that playlist. It must be public or unlisted.';return}m.textContent='Added '+ids.length+' videos.'}else m.textContent='Video added.';
+ u.unshift(e);ss('ud',UD);$('#lnk').value='';mg();loadSec()};
+$('#ex').onclick=()=>{const b=new Blob([JSON.stringify({ud:UD,fav:FAV,pr:PR})],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='satsang-backup.json';a.click()};
+$('#im').onclick=()=>$('#imf').click();
+$('#imf').onchange=async e=>{try{const d=JSON.parse(await e.target.files[0].text());UD=d.ud||UD;FAV=d.fav||FAV;PR=d.pr||PR;ss('ud',UD);ss('fav',FAV);ss('pr',PR);$('#ov').hidden=true;loadSec();alert('Backup imported')}catch{alert('Could not read that file')}};
 function lockOn(){tlOn=true;$('#tlt').textContent=idx>=0?ttl(q[idx],idx):'';$('#tl').hidden=false;document.body.style.overflow='hidden';try{history.pushState({tl:1},'')}catch{}wake()}
 function lockOff(){tlOn=false;$('#tl').hidden=true;document.body.style.overflow='';if(!wakeOn)unwake();try{history.back()}catch{}}
 {const tb=$('#tlu');let ht=0,hr=0;const hend=()=>{cancelAnimationFrame(hr);tb.style.setProperty('--p','0deg')};
