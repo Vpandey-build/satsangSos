@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b1410">
+<title>Satsang Library</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{color-scheme:dark;--bg:#1b1410;--card:#2a201a;--accent:#e8a24a;--muted:#b9a99b;--border:#49362a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f6eee7;font:16px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{padding:16px 16px 8px;position:sticky;top:0;background:var(--bg);z-index:2}h1{font-size:1.25rem;margin:0 0 12px}
+.tabs{display:flex;overflow:auto;gap:8px;padding-bottom:8px}.tab{white-space:nowrap;border:1px solid var(--border);background:var(--card);color:#eee;padding:12px;border-radius:999px}.tab.active{background:var(--accent);color:#21160e;border-color:var(--accent);font-weight:700}
+main{padding:0 14px 24px}.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin:10px 0}
+.player-wrap{aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden}.player-wrap iframe{width:100%;height:100%}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.btn{background:#3a2b21;border:1px solid var(--border);color:#fff;border-radius:12px;padding:12px 8px;min-height:48px;font-size:14px}.btn.primary{background:var(--accent);color:#20140c;border-color:var(--accent);font-weight:700}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.meta,.small{color:var(--muted);font-size:12px}.list{max-height:48vh;overflow:auto;margin-top:8px}.video-row{display:flex;gap:10px;width:100%;text-align:left;padding:12px;border:0;border-bottom:1px solid var(--border);background:transparent;color:#eee;align-items:center;min-height:54px}.video-row.active{background:#493323;border-left:4px solid var(--accent)}.num{color:var(--accent);min-width:28px}.title{flex:1}.setting-row{display:flex;gap:8px;flex-wrap:wrap}.resume{border:1px solid var(--accent)}input{width:100%;padding:12px;background:#1b1410;border:1px solid var(--border);border-radius:10px;color:white;margin:8px 0}button{cursor:pointer} .hidden{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>🙏 Satsang Library</h1><nav class="tabs" id="tabs"></nav></header>
+<main>
+<section class="card" id="resumeCard" hidden><strong>Resume where you left off?</strong><div id="resumeInfo" class="small" style="margin:8px 0"></div><button class="btn primary" id="resumeBtn">Resume</button><button class="btn" id="dismissResume">Dismiss</button></section>
+<section class="card">
+<div class="player-wrap"><div id="player"></div></div>
+<div class="controls"><button class="btn" id="prev">⏮ Prev</button><button class="btn" id="next">Next ⏭</button><button class="btn" id="shuffle">Shuffle: Off</button><button class="btn" id="wake">Screen on: On</button></div>
+<div class="setting-row"><button class="btn" id="reload">Reload list</button><button class="btn" id="titlesSettings">Titles / API key</button></div>
+<div id="tabMeta" class="small" style="margin-top:8px"></div><div id="status" class="small" style="margin-top:6px"></div>
+</section>
+<section class="card"><div class="row"><strong id="listHeading">Satsangs</strong><span class="small" id="listCount"></span></div><div class="list" id="list"></div></section>
+<section class="card hidden" id="keyPanel"><strong>Optional YouTube Data API key</strong><p class="small">Stored only in this browser. Use Google Cloud Console → enable YouTube Data API v3 → Credentials → create an API key.</p><input id="apiKey" placeholder="Paste API key (optional)" autocomplete="off"><div class="setting-row"><button class="btn primary" id="saveKey">Save key</button><button class="btn" id="cancelKey">Cancel</button></div></section>
+</main>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+const SECTIONS=[
+{name:"Rajinder Singh Ji",playlist:"PLBMCmxwJKwVt_JobavyvGiEq1NCFI3ZxO"},
+{name:"Darshan Singh Ji",query:"sant darshan singh ji maharaj satsang"},
+{name:"Kirpal Singh Ji",playlist:"PLBMCmxwJKwVsgOE4TJ4ONR_3T8c8id2VD"},
+{name:"Mix",playlist:"PLBMCmxwJKwVvql9ftLuDsYqTlfLhcTcLx"}
+];
+const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const key="satsang_pwa_v1_", titleCacheKey=key+"titles", listKey=s=>key+"list_"+(s.playlist||s.query);
+let titleCache=JSON.parse(localStorage.getItem(titleCacheKey)||"{}"), apiKey=localStorage.getItem(key+"api")||"", section=0, queue=[], index=-1, shuffle=false, played=new Set(), player, wakeLock=null, wakeOn=localStorage.getItem(key+"wake")!=="false", pendingResume=null, ytReady=false;
+function cacheTitle(id,t){titleCache[id]=t;localStorage.setItem(titleCacheKey,JSON.stringify(titleCache))}
+function setStatus(s){$("#status").textContent=s}
+function fmtTime(t){t=Math.max(0,Math.floor(t||0));return `${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`}
+function tabs(){ $("#tabs").innerHTML=SECTIONS.map((s,i)=>`<button class="tab ${i===section?"active":""}" data-i="${i}">${esc(s.name)}</button>`).join("");$("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>selectSection(+b.dataset.i))}
+function selectSection(i){section=i;index=-1;shuffle=false;played.clear();queue=[];tabs();render();loadSection()}
+function getCached(){try{return JSON.parse(localStorage.getItem(listKey(SECTIONS[section]))||"null")}catch{return null}}
+function saveList(items){localStorage.setItem(listKey(SECTIONS[section]),JSON.stringify(items))}
+function render(){let s=SECTIONS[section];$("#tabMeta").textContent=(s.playlist?"Playlist ID: "+s.playlist:"Search results: "+s.query)+" · "+queue.length+" videos";$("#listHeading").textContent=s.name+" satsangs";$("#listCount").textContent=queue.length+" videos";$("#list").innerHTML=queue.map((v,i)=>`<button class="video-row ${i===index?"active":""}" data-i="${i}"><span class="num">${i+1}</span><span class="title">${esc(v.title||"Satsang "+(i+1))}</span></button>`).join("");$("#list").querySelectorAll("button").forEach(b=>b.onclick=()=>playAt(+b.dataset.i,true));$("#shuffle").textContent="Shuffle: "+(shuffle?"On":"Off");$("#wake").textContent="Screen on: "+(wakeOn?"On":"Off")}
+function makeIds(items){return items.filter(x=>x.id).map(x=>({id:x.id,title:x.title||titleCache[x.id]||""}))}
+async function playlistViaPlayer(pid){
+return new Promise(resolve=>{let helper=document.createElement("div");helper.style.position="fixed";helper.style.left="-10000px";helper.style.width="200px";helper.style.height="112px";document.body.appendChild(helper);let hp=new YT.Player(helper,{playerVars:{listType:"playlist",list:pid},events:{onReady:async e=>{let tries=0,items=[];let poll=setInterval(()=>{try{items=e.target.getPlaylist()||[]}catch{}if(items.length||++tries>=25){clearInterval(poll);try{e.target.destroy()}catch{}helper.remove();resolve(items.map(id=>({id,title:titleCache[id]||""}))) }},600)}}});});
+}
+async function loadPlaylist(s){
+if(apiKey){let out=[],token="";do{let u=new URL("https://www.googleapis.com/youtube/v3/playlistItems");u.search=new URLSearchParams({part:"snippet",playlistId:s.playlist,maxResults:"50",key:apiKey,...(token?{pageToken:token}:{})});let r=await fetch(u);if(!r.ok)throw Error("API playlist request failed");let d=await r.json();out.push(...(d.items||[]).map(it=>({id:it.snippet?.resourceId?.videoId,title:it.snippet?.title})).filter(it=>it.id&&it.title!=="Private video"&&it.title!=="Deleted video"));token=d.nextPageToken||""}while(token);return out}
+return await playlistViaPlayer(s.playlist)
+}
+async function loadSearch(s){
+if(!apiKey)return null;let ids=[],token="";
+for(let p=0;p<4;p++){let u=new URL("https://www.googleapis.com/youtube/v3/search");u.search=new URLSearchParams({part:"snippet",q:s.query,type:"video",videoEmbeddable:"true",maxResults:"50",key:apiKey,...(token?{pageToken:token}:{})});let r=await fetch(u);if(!r.ok)throw Error("Search API request failed");let d=await r.json();ids.push(...(d.items||[]).map(x=>({id:x.id.videoId,title:x.snippet?.title||""})));token=d.nextPageToken||"";if(!token)break}
+let kept=[];for(let i=0;i<ids.length;i+=50){let chunk=ids.slice(i,i+50);if(!chunk.length)continue;let u=new URL("https://www.googleapis.com/youtube/v3/videos");u.search=new URLSearchParams({part:"contentDetails",id:chunk.map(x=>x.id).join(","),key:apiKey});let r=await fetch(u);if(!r.ok)throw Error("Videos API request failed");let d=await r.json();let durations=Object.fromEntries((d.items||[]).map(v=>[v.id,v.contentDetails?.duration]));kept.push(...chunk.filter(v=>durationSeconds(durations[v.id])>180))}
+return kept
+}
+function durationSeconds(iso){let m=String(iso||"").match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);return m?((+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0)):0}
+async function loadSection(force=false){
+let s=SECTIONS[section];setStatus("Loading list…");let cached=!force?getCached():null;if(cached){queue=cached;render();setStatus("Loaded cached list");hydrateTitles();return}
+try{let items=s.playlist?await loadPlaylist(s):await loadSearch(s);if(items===null){queue=[];render();setStatus("Darshan Singh Ji requires an API key. Tap Titles / API key.");return}queue=makeIds(items);saveList(queue);render();setStatus("List loaded");hydrateTitles();if(apiKey)fetchTitlesAPI()}catch(e){setStatus("Could not load list: "+e.message);let fallback=getCached();if(fallback){queue=fallback;render()}}
+}
+async function hydrateTitles(){let ids=queue.filter(v=>!v.title).map(v=>v.id);render();for(let i=0;i<ids.length;i+=4){await Promise.all(ids.slice(i,i+4).map(async id=>{if(titleCache[id])return;let url="https://www.youtube.com/oembed?format=json&url="+encodeURIComponent("https://www.youtube.com/watch?v="+id);try{let r=await fetch(url);if(r.ok){let d=await r.json();cacheTitle(id,d.title);return}}catch{}try{let r=await fetch("https://noembed.com/embed?url="+encodeURIComponent("https://www.youtube.com/watch?v="+id));if(r.ok){let d=await r.json();if(d.title)cacheTitle(id,d.title)}}catch{}}));queue.forEach(v=>{if(!v.title&&titleCache[v.id])v.title=titleCache[v.id]});render();saveList(queue)}}
+async function fetchTitlesAPI(){if(!apiKey||!queue.length)return;for(let i=0;i<queue.length;i+=50){let chunk=queue.slice(i,i+50),u=new URL("https://www.googleapis.com/youtube/v3/videos");u.search=new URLSearchParams({part:"snippet",id:chunk.map(v=>v.id).join(","),key:apiKey});try{let r=await fetch(u);if(!r.ok)continue;let d=await r.json();for(let v of d.items||[]){cacheTitle(v.id,v.snippet?.title||"");let q=queue.find(x=>x.id===v.id);if(q)q.title=v.snippet?.title||q.title}render();saveList(queue)}catch{}}}
+function playAt(i,manual=false){if(!queue.length)return;if(i<0)i=queue.length-1;if(i>=queue.length)i=0;if(manual){shuffle=false;played.clear()}index=i;played.add(queue[index].id);render();player?.loadVideoById({videoId:queue[index].id});setMedia();saveProgress()}
+function next(){if(!queue.length)return;if(shuffle){if(played.size>=queue.length)played.clear();let candidates=queue.map((_,i)=>i).filter(i=>!played.has(queue[i].id));let n=candidates[Math.floor(Math.random()*candidates.length)];playAt(n,false)}else playAt(index+1,false)}
+function previous(){let t=player?.getCurrentTime?.()||0;if(t>5){player.seekTo(0,true);return}playAt(index-1,false)}
+function setMedia(){if(!("mediaSession"in navigator)||index<0)return;let title=queue[index]?.title||"Satsang "+(index+1);navigator.mediaSession.metadata=new MediaMetadata({title,artist:SECTIONS[section].name,album:"Satsang Library"});navigator.mediaSession.setActionHandler("play",()=>player?.playVideo());navigator.mediaSession.setActionHandler("pause",()=>player?.pauseVideo());navigator.mediaSession.setActionHandler("nexttrack",next);navigator.mediaSession.setActionHandler("previoustrack",previous)}
+function saveProgress(){if(index<0||!queue[index])return;localStorage.setItem(key+"resume",JSON.stringify({section,videoId:queue[index].id,time:player?.getCurrentTime?.()||0,shuffle,title:queue[index].title,played:[...played]}))}
+function acquireWake(){if(!wakeOn||!("wakeLock"in navigator))return;navigator.wakeLock.request("screen").then(l=>{wakeLock=l;l.addEventListener("release",()=>wakeLock=null)}).catch(()=>{})}
+function releaseWake(){wakeLock?.release().catch(()=>{});wakeLock=null}
+function toggleWake(){wakeOn=!wakeOn;localStorage.setItem(key+"wake",wakeOn);render();if(player?.getPlayerState?.()===1)wakeOn?acquireWake():releaseWake()}
+function onPlayerState(e){if(e.data===YT.PlayerState.PLAYING){acquireWake();setMedia()}if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED)releaseWake();if(e.data===YT.PlayerState.ENDED)next()}
+function onYouTubeIframeAPIReady(){ytReady=true;player=new YT.Player("player",{width:"100%",height:"100%",playerVars:{playsinline:1,rel:0,modestbranding:1},events:{onReady:()=>{loadSection();checkResume()},onStateChange:onPlayerState}})}
+function checkResume(){try{let r=JSON.parse(localStorage.getItem(key+"resume")||"null");if(r&&r.videoId){pendingResume=r;$("#resumeCard").hidden=false;$("#resumeInfo").textContent=(r.title||"Satsang")+" · "+fmtTime(r.time)}}catch{}}
+$("#resumeBtn").onclick=()=>{if(!pendingResume)return;selectSection(pendingResume.section);let wait=()=>{let i=queue.findIndex(v=>v.id===pendingResume.videoId);if(i>=0){shuffle=!!pendingResume.shuffle;played=new Set(pendingResume.played||[]);index=i;render();player.loadVideoById({videoId:pendingResume.videoId,startSeconds:pendingResume.time||0});$("#resumeCard").hidden=true;setMedia()}else if(!queue.length)setTimeout(wait,500)};wait()};
+$("#dismissResume").onclick=()=>$("#resumeCard").hidden=true;
+$("#prev").onclick=previous;$("#next").onclick=next;$("#shuffle").onclick=()=>{shuffle=!shuffle;played.clear();if(index>=0)played.add(queue[index].id);render()};$("#wake").onclick=toggleWake;$("#reload").onclick=()=>loadSection(true);
+$("#titlesSettings").onclick=()=>{$("#keyPanel").classList.toggle("hidden");$("#apiKey").value=apiKey};
+$("#cancelKey").onclick=()=>$("#keyPanel").classList.add("hidden");
+$("#saveKey").onclick=()=>{apiKey=$("#apiKey").value.trim();localStorage.setItem(key+"api",apiKey);SECTIONS.forEach(s=>localStorage.removeItem(listKey(s)));$("#keyPanel").classList.add("hidden");selectSection(section)};
+document.addEventListener("visibilitychange",()=>{if(document.hidden){saveProgress();releaseWake()}else if(player?.getPlayerState?.()===1)acquireWake()});
+setInterval(saveProgress,4000);window.addEventListener("pagehide",saveProgress);
+tabs();render();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body></html>
