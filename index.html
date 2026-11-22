@@ -1,91 +1,129 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
+<html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1b1410">
 <title>Satsang Library</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png">
 <style>
-:root{color-scheme:dark;--bg:#1b1410;--card:#2a201a;--accent:#e8a24a;--muted:#b9a99b;--border:#49362a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f6eee7;font:16px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-header{padding:16px 16px 8px;position:sticky;top:0;background:var(--bg);z-index:2}h1{font-size:1.25rem;margin:0 0 12px}
-.tabs{display:flex;overflow:auto;gap:8px;padding-bottom:8px}.tab{white-space:nowrap;border:1px solid var(--border);background:var(--card);color:#eee;padding:12px;border-radius:999px}.tab.active{background:var(--accent);color:#21160e;border-color:var(--accent);font-weight:700}
-main{padding:0 14px 24px}.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin:10px 0}
-.player-wrap{aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden}.player-wrap iframe{width:100%;height:100%}
-.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}.btn{background:#3a2b21;border:1px solid var(--border);color:#fff;border-radius:12px;padding:12px 8px;min-height:48px;font-size:14px}.btn.primary{background:var(--accent);color:#20140c;border-color:var(--accent);font-weight:700}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.meta,.small{color:var(--muted);font-size:12px}.list{max-height:48vh;overflow:auto;margin-top:8px}.video-row{display:flex;gap:10px;width:100%;text-align:left;padding:12px;border:0;border-bottom:1px solid var(--border);background:transparent;color:#eee;align-items:center;min-height:54px}.video-row.active{background:#493323;border-left:4px solid var(--accent)}.num{color:var(--accent);min-width:28px}.title{flex:1}.progress-tag{font-size:11px;color:var(--muted);white-space:nowrap}.progress-tag.done{color:var(--accent);font-weight:700}.setting-row{display:flex;gap:8px;flex-wrap:wrap}.resume{border:1px solid var(--accent)}input{width:100%;padding:12px;background:#1b1410;border:1px solid var(--border);border-radius:10px;color:white;margin:8px 0}button{cursor:pointer} .hidden{display:none!important}
-</style>
-</head>
-<body>
-<header><h1>🙏 Satsang Library</h1><nav class="tabs" id="tabs"></nav></header>
+:root{color-scheme:dark;--bg:#1b1410;--sf:#251b15;--bd:#3a2c22;--ac:#e8a24a;--tx:#f3e9dc;--mu:#a8978a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 6px}
+h1{font-size:19px;margin:0;font-weight:600;letter-spacing:.2px}h1 span{color:var(--ac)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:6px 16px 12px;scrollbar-width:none}
+.tab{flex:none;padding:9px 15px;border-radius:20px;background:var(--sf);border:1px solid var(--bd);color:var(--mu);font-size:14px}
+.tab.on{background:var(--ac);border-color:var(--ac);color:#22150b;font-weight:600}
+.dock{position:sticky;top:0;z-index:5;background:var(--bg);padding:0 16px 10px;border-bottom:1px solid var(--bd)}
+.pw{aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden}.pw iframe{width:100%;height:100%}
+.now{padding:10px 2px 4px;min-height:52px}.now small{color:var(--mu);font-size:12px}.now b{display:block;font-weight:500;font-size:15px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ctl{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.cb{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;border-radius:12px;font-size:11px;color:var(--mu);background:var(--sf);border:1px solid var(--bd)}
+.cb.on{color:var(--ac);border-color:var(--ac)}.cb.big{color:#22150b;background:var(--ac);border-color:var(--ac)}
+main{padding:12px 16px 40px}
+.card{background:#33261b;border:1px solid var(--ac);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.card div{color:var(--mu);font-size:13px;margin:4px 0 10px}.card .a{display:flex;gap:8px}
+.pill{padding:9px 16px;border-radius:10px;background:var(--sf);border:1px solid var(--bd)}.pill.p{background:var(--ac);color:#22150b;border-color:var(--ac);font-weight:600}
+.lh{display:flex;justify-content:space-between;align-items:center;color:var(--mu);font-size:13px;padding:2px 2px 8px}
+.row{display:grid;grid-template-columns:30px 1fr auto;gap:2px 8px;width:100%;text-align:left;padding:12px 6px;border-bottom:1px solid var(--bd);align-items:center;scroll-margin-top:350px}
+.row.on{background:#2f2218;border-radius:10px}.row.on .tt{color:var(--ac)}
+.num{color:var(--mu);font-size:13px}.tt{font-size:14.5px}.st{font-size:11.5px;color:var(--mu);white-space:nowrap}.st.d{color:var(--ac);font-weight:600}
+.bar{grid-column:2/4;height:3px;background:var(--bd);border-radius:2px;overflow:hidden;display:block}.bar u{display:block;height:100%;background:var(--ac)}
+.msg{padding:26px 10px;text-align:center;color:var(--mu)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:flex-end}.ov[hidden]{display:none}
+.sh{background:var(--sf);width:100%;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.sh h2{margin:0 0 10px;font-size:17px}.sh p{color:var(--mu);font-size:12.5px;margin:6px 0}
+input{width:100%;padding:12px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font:inherit;margin:6px 0}
+.sh .pill{margin:6px 6px 0 0}
+</style></head><body>
+<header><h1><span>&#10047;</span> Satsang Library</h1><button class="cb" id="gear" aria-label="Settings" style="flex-direction:row;padding:8px 12px"><svg viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.5"/></svg></button></header>
+<nav class="tabs" id="tabs"></nav>
+<div class="dock">
+ <div class="pw"><div id="player"></div></div>
+ <div class="now" id="now"><small>Pick a satsang to begin</small></div>
+ <div class="ctl" id="ctl"></div>
+</div>
 <main>
-<section class="card" id="resumeCard" hidden><strong>Resume where you left off?</strong><div id="resumeInfo" class="small" style="margin:8px 0"></div><button class="btn primary" id="resumeBtn">Resume</button><button class="btn" id="dismissResume">Dismiss</button></section>
-<section class="card">
-<div class="player-wrap"><div id="player"></div></div>
-<div class="controls"><button class="btn" id="prev">⏮ Previous</button><button class="btn" id="next">Next ⏭</button><button class="btn" id="shuffle">Shuffle: Off</button><button class="btn" id="wake">Screen on: On</button></div>
-<div class="setting-row"><button class="btn" id="reload">Refresh list</button></div><div id="status" class="small" style="margin-top:6px"></div>
-</section>
-<section class="card"><div class="row"><strong id="listHeading">Satsangs</strong><span class="small" id="listCount"></span></div><div class="list" id="list"></div></section>
-
+ <div class="card" id="rc" hidden><b>Continue listening?</b><div id="ri"></div><div class="a"><button class="pill p" id="rb">Resume</button><button class="pill" id="rd">Dismiss</button></div></div>
+ <div class="lh"><span id="lh"></span><button class="pill" id="rf" style="padding:6px 12px;font-size:12px">Refresh</button></div>
+ <div id="list"></div><div class="msg" id="st"></div>
 </main>
+<div class="ov" id="ov" hidden><div class="sh">
+ <h2>Settings</h2>
+ <p>Optional YouTube API key: loads titles faster. Everything works without it.</p>
+ <input id="ak" placeholder="Paste API key (optional)" autocomplete="off">
+ <button class="pill p" id="sk">Save key</button><button class="pill" id="rp">Reset all progress</button><button class="pill" id="cc">Clear saved lists</button><button class="pill" id="cx">Close</button>
+</div></div>
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-const SECTIONS=[
-{name:"Rajinder Singh Ji",playlist:"PLBMCmxwJKwVt_JobavyvGiEq1NCFI3ZxO"},
-{name:"Darshan Singh Ji",query:"sant darshan singh ji maharaj satsang"},
-{name:"Kirpal Singh Ji",playlist:"PLBMCmxwJKwVsgOE4TJ4ONR_3T8c8id2VD"},
-{name:"Mix",playlist:"PLBMCmxwJKwVvql9ftLuDsYqTlfLhcTcLx"}
-];
-const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const key="satsang_pwa_v1_", titleCacheKey=key+"titles", listKey=s=>key+"list_"+(s.playlist||s.query);
-let titleCache=JSON.parse(localStorage.getItem(titleCacheKey)||"{}"), apiKey=localStorage.getItem(key+"api")||"", section=0, queue=[], index=-1, shuffle=false, played=new Set(), player, wakeLock=null, wakeOn=localStorage.getItem(key+"wake")!=="false", pendingResume=null, ytReady=false;
-function cacheTitle(id,t){titleCache[id]=t;localStorage.setItem(titleCacheKey,JSON.stringify(titleCache))}
-function setStatus(s){$("#status").textContent=s}
-function fmtTime(t){t=Math.max(0,Math.floor(t||0));return `${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`}
-function tabs(){ $("#tabs").innerHTML=SECTIONS.map((s,i)=>`<button class="tab ${i===section?"active":""}" data-i="${i}">${esc(s.name)}</button>`).join("");$("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>selectSection(+b.dataset.i))}
-function selectSection(i){section=i;index=-1;shuffle=false;played.clear();queue=[];pendingResume=null;$("#resumeCard").hidden=true;try{player?.stopVideo()}catch{};tabs();render();window.scrollTo({top:0,behavior:"instant"});loadSection()}
-function getCached(){try{return JSON.parse(localStorage.getItem(listKey(SECTIONS[section]))||"null")}catch{return null}}
-function saveList(items){localStorage.setItem(listKey(SECTIONS[section]),JSON.stringify(items))}
-function watchStore(){let s=SECTIONS[section],k=key+"watch_"+(s.playlist||s.query);try{return JSON.parse(localStorage.getItem(k)||"{}")}catch{return {}}}
-function render(){let listScroll=$("#list").scrollTop;let s=SECTIONS[section];$("#listHeading").textContent=s.name+" satsangs";$("#listCount").textContent=queue.length+" videos";let marks=watchStore();$("#list").innerHTML=queue.map((v,i)=>{let m=marks[v.id]||{},pct=Math.min(100,Math.round((m.percent||0)));let badge=m.completed?'<span class="progress-tag done">✓ Done</span>':pct>=50?'<span class="progress-tag">'+pct+'% listened</span>':pct>0?'<span class="progress-tag">'+pct+'%</span>':'';return `<button class="video-row ${i===index?"active":""}" data-i="${i}"><span class="num">${i+1}</span><span class="title">${esc(v.title||"Satsang "+(i+1))}</span>${badge}</button>`}).join("");$("#list").querySelectorAll("button").forEach(b=>b.onclick=()=>playAt(+b.dataset.i,true));$("#shuffle").textContent="Shuffle: "+(shuffle?"On":"Off");$("#wake").textContent="Screen on: "+(wakeOn?"On":"Off");$("#list").scrollTop=listScroll}
-function makeIds(items){return items.filter(x=>x.id).map(x=>({id:x.id,title:x.title||titleCache[x.id]||""}))}
-async function playlistViaPlayer(pid){
-return new Promise(resolve=>{let helper=document.createElement("div");helper.style.position="fixed";helper.style.left="-10000px";helper.style.width="200px";helper.style.height="112px";document.body.appendChild(helper);let hp=new YT.Player(helper,{playerVars:{listType:"playlist",list:pid},events:{onReady:async e=>{let tries=0,items=[];let poll=setInterval(()=>{try{items=e.target.getPlaylist()||[]}catch{}if(items.length||++tries>=25){clearInterval(poll);try{e.target.destroy()}catch{}helper.remove();resolve(items.map(id=>({id,title:titleCache[id]||""}))) }},600)}}});});
-}
-async function loadPlaylist(s){
-if(apiKey){let out=[],token="";do{let u=new URL("https://www.googleapis.com/youtube/v3/playlistItems");u.search=new URLSearchParams({part:"snippet",playlistId:s.playlist,maxResults:"50",key:apiKey,...(token?{pageToken:token}:{})});let r=await fetch(u);if(!r.ok)throw Error("API playlist request failed");let d=await r.json();out.push(...(d.items||[]).map(it=>({id:it.snippet?.resourceId?.videoId,title:it.snippet?.title})).filter(it=>it.id&&it.title!=="Private video"&&it.title!=="Deleted video"));token=d.nextPageToken||""}while(token);return out}
-return await playlistViaPlayer(s.playlist)
-}
-async function loadSearch(s){
-if(!apiKey)return null;let ids=[],token="";
-for(let p=0;p<4;p++){let u=new URL("https://www.googleapis.com/youtube/v3/search");u.search=new URLSearchParams({part:"snippet",q:s.query,type:"video",videoEmbeddable:"true",maxResults:"50",key:apiKey,...(token?{pageToken:token}:{})});let r=await fetch(u);if(!r.ok)throw Error("Search API request failed");let d=await r.json();ids.push(...(d.items||[]).map(x=>({id:x.id.videoId,title:x.snippet?.title||""})));token=d.nextPageToken||"";if(!token)break}
-let kept=[];for(let i=0;i<ids.length;i+=50){let chunk=ids.slice(i,i+50);if(!chunk.length)continue;let u=new URL("https://www.googleapis.com/youtube/v3/videos");u.search=new URLSearchParams({part:"contentDetails",id:chunk.map(x=>x.id).join(","),key:apiKey});let r=await fetch(u);if(!r.ok)throw Error("Videos API request failed");let d=await r.json();let durations=Object.fromEntries((d.items||[]).map(v=>[v.id,v.contentDetails?.duration]));kept.push(...chunk.filter(v=>durationSeconds(durations[v.id])>180))}
-return kept
-}
-function durationSeconds(iso){let m=String(iso||"").match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);return m?((+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0)):0}
-async function loadSection(force=false){
-let s=SECTIONS[section];setStatus("Loading list…");let cached=!force?getCached():null;if(cached){queue=cached;render();setStatus("Loaded cached list");hydrateTitles();return}
-try{let items=s.playlist?await loadPlaylist(s):await loadSearch(s);if(items===null){queue=[];render();setStatus("Darshan Singh Ji requires an API key. Tap Titles / API key.");return}queue=makeIds(items);saveList(queue);render();setStatus("List loaded");hydrateTitles();if(apiKey)fetchTitlesAPI()}catch(e){setStatus("Could not load list: "+e.message);let fallback=getCached();if(fallback){queue=fallback;render()}}
-}
-async function hydrateTitles(){let ids=queue.filter(v=>!v.title).map(v=>v.id);render();for(let i=0;i<ids.length;i+=4){await Promise.all(ids.slice(i,i+4).map(async id=>{if(titleCache[id])return;let url="https://www.youtube.com/oembed?format=json&url="+encodeURIComponent("https://www.youtube.com/watch?v="+id);try{let r=await fetch(url);if(r.ok){let d=await r.json();cacheTitle(id,d.title);return}}catch{}try{let r=await fetch("https://noembed.com/embed?url="+encodeURIComponent("https://www.youtube.com/watch?v="+id));if(r.ok){let d=await r.json();if(d.title)cacheTitle(id,d.title)}}catch{}}));queue.forEach(v=>{if(!v.title&&titleCache[v.id])v.title=titleCache[v.id]});render();saveList(queue)}}
-async function fetchTitlesAPI(){if(!apiKey||!queue.length)return;for(let i=0;i<queue.length;i+=50){let chunk=queue.slice(i,i+50),u=new URL("https://www.googleapis.com/youtube/v3/videos");u.search=new URLSearchParams({part:"snippet",id:chunk.map(v=>v.id).join(","),key:apiKey});try{let r=await fetch(u);if(!r.ok)continue;let d=await r.json();for(let v of d.items||[]){cacheTitle(v.id,v.snippet?.title||"");let q=queue.find(x=>x.id===v.id);if(q)q.title=v.snippet?.title||q.title}render();saveList(queue)}catch{}}}
-function playAt(i,manual=false){if(!queue.length)return;if(i<0)i=queue.length-1;if(i>=queue.length)i=0;if(manual){shuffle=false;played.clear()}index=i;played.add(queue[index].id);render();player?.loadVideoById({videoId:queue[index].id});setMedia();saveProgress()}
-function next(){if(!queue.length)return;if(shuffle){if(played.size>=queue.length)played.clear();let candidates=queue.map((_,i)=>i).filter(i=>!played.has(queue[i].id));let n=candidates[Math.floor(Math.random()*candidates.length)];playAt(n,false)}else playAt(index+1,false)}
-function previous(){let t=player?.getCurrentTime?.()||0;if(t>5){player.seekTo(0,true);return}playAt(index-1,false)}
-function setMedia(){if(!("mediaSession"in navigator)||index<0)return;let title=queue[index]?.title||"Satsang "+(index+1);navigator.mediaSession.metadata=new MediaMetadata({title,artist:SECTIONS[section].name,album:"Satsang Library"});navigator.mediaSession.setActionHandler("play",()=>player?.playVideo());navigator.mediaSession.setActionHandler("pause",()=>player?.pauseVideo());navigator.mediaSession.setActionHandler("nexttrack",next);navigator.mediaSession.setActionHandler("previoustrack",previous)}
-function saveProgress(){if(index<0||!queue[index])return;let id=queue[index].id,time=player?.getCurrentTime?.()||0,duration=player?.getDuration?.()||0,pct=duration?Math.min(100,Math.round(time/duration*100)):0;let s=SECTIONS[section],storeKey=key+"watch_"+(s.playlist||s.query),marks=watchStore(),old=marks[id]||{};marks[id]={percent:Math.max(old.percent||0,pct),completed:!!old.completed};localStorage.setItem(storeKey,JSON.stringify(marks));localStorage.setItem(key+"resume",JSON.stringify({section,videoId:id,time,shuffle,title:queue[index].title,played:[...played]}));render()}
-function acquireWake(){if(!wakeOn||!("wakeLock"in navigator))return;navigator.wakeLock.request("screen").then(l=>{wakeLock=l;l.addEventListener("release",()=>wakeLock=null)}).catch(()=>{})}
-function releaseWake(){wakeLock?.release().catch(()=>{});wakeLock=null}
-function toggleWake(){wakeOn=!wakeOn;localStorage.setItem(key+"wake",wakeOn);render();if(player?.getPlayerState?.()===1)wakeOn?acquireWake():releaseWake()}
-function onPlayerState(e){if(e.data===YT.PlayerState.PLAYING){acquireWake();setMedia()}if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED)releaseWake();if(e.data===YT.PlayerState.ENDED){let s=SECTIONS[section],storeKey=key+"watch_"+(s.playlist||s.query),marks=watchStore();if(queue[index])marks[queue[index].id]={percent:100,completed:true};localStorage.setItem(storeKey,JSON.stringify(marks));render();next()}}
-function onYouTubeIframeAPIReady(){ytReady=true;player=new YT.Player("player",{width:"100%",height:"100%",playerVars:{playsinline:1,rel:0,modestbranding:1},events:{onReady:()=>{loadSection();checkResume()},onStateChange:onPlayerState}})}
-function checkResume(){try{let r=JSON.parse(localStorage.getItem(key+"resume")||"null");if(r&&r.videoId){pendingResume=r;$("#resumeCard").hidden=false;$("#resumeInfo").textContent=(r.title||"Satsang")+" · "+fmtTime(r.time)}}catch{}}
-$("#resumeBtn").onclick=()=>{if(!pendingResume)return;selectSection(pendingResume.section);let wait=()=>{let i=queue.findIndex(v=>v.id===pendingResume.videoId);if(i>=0){shuffle=!!pendingResume.shuffle;played=new Set(pendingResume.played||[]);index=i;render();player.loadVideoById({videoId:pendingResume.videoId,startSeconds:pendingResume.time||0});$("#resumeCard").hidden=true;setMedia()}else if(!queue.length)setTimeout(wait,500)};wait()};
-$("#dismissResume").onclick=()=>$("#resumeCard").hidden=true;
-$("#prev").onclick=previous;$("#next").onclick=next;$("#shuffle").onclick=()=>{shuffle=!shuffle;played.clear();if(index>=0)played.add(queue[index].id);render()};$("#wake").onclick=toggleWake;$("#reload").onclick=()=>loadSection(true);
-document.addEventListener("visibilitychange",()=>{if(document.hidden){saveProgress();releaseWake()}else if(player?.getPlayerState?.()===1)acquireWake()});
-setInterval(saveProgress,4000);window.addEventListener("pagehide",saveProgress);
-tabs();render();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
-</script>
-</body></html>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const K='sat2_',gs=(k,d)=>{try{return JSON.parse(localStorage.getItem(K+k))??d}catch{return d}},ss=(k,v)=>{try{localStorage.setItem(K+k,JSON.stringify(v))}catch{}};
+const SEC=[{n:'Rajinder Singh Ji',pl:'PLBMCmxwJKwVt_JobavyvGiEq1NCFI3ZxO'},{n:'Darshan Singh Ji',pl:'PLHzYLkUkirjTGJzpXpbZNCn9aNBOLlHMs'},{n:'Kirpal Singh Ji',pl:'PLBMCmxwJKwVsgOE4TJ4ONR_3T8c8id2VD'},{n:'Mix (all three)',mix:[0,1,2]}];
+let TT=gs('tt',{}),PR=gs('pr',{}),LS=gs('ls',{}),key=gs('api',''),wakeOn=gs('wake',true);
+let errs=0,wp=0,cur=null,sec=0,q=[],idx=-1,shuf=false,played=new Set(),hist=[],P,wl=null,chain=Promise.resolve(),tm;
+const I={prev:'<path d="M19 5L9 12l10 7zM5 5v14"/>',next:'<path d="M5 5l10 7-10 7zM19 5v14"/>',play:'<path d="M7 4l13 8-13 8z"/>',pause:'<path d="M8 5v14M16 5v14" stroke-width="3"/>',shuf:'<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>'};
+const ic=n=>'<svg viewBox="0 0 24 24">'+I[n]+'</svg>';
+const setSt=s=>$('#st').textContent=s,svT=()=>{clearTimeout(tm);tm=setTimeout(()=>ss('tt',TT),800)};
+const fmt=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
+const ttl=(id,i)=>TT[id]||'Satsang '+(i+1);
+
+function tabs(){$('#tabs').innerHTML=SEC.map((s,i)=>`<button class="tab ${i===sec?'on':''}" data-i="${i}">${esc(s.n)}</button>`).join('');$('#tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>selectSec(+b.dataset.i))}
+function ctl(){const st=P?.getPlayerState?.()===1;$('#ctl').innerHTML=`<button class="cb" id="pv">${ic('prev')}Prev</button><button class="cb big" id="pp">${ic(st?'pause':'play')}${st?'Pause':'Play'}</button><button class="cb" id="nx">${ic('next')}Next</button><button class="cb ${shuf?'on':''}" id="sf">${ic('shuf')}Shuffle</button><button class="cb ${wakeOn?'on':''}" id="wk">${ic('sun')}Screen on</button>`;
+ $('#pv').onclick=prev;$('#nx').onclick=next;$('#pp').onclick=()=>{if(!P)return;if(idx<0)return next();P.getPlayerState()===1?P.pauseVideo():P.playVideo()};
+ $('#sf').onclick=()=>{shuf=!shuf;played.clear();if(idx>=0)played.add(q[idx]);if(shuf&&idx<0)next();ctl()};
+ $('#wk').onclick=()=>{wakeOn=!wakeOn;ss('wake',wakeOn);wakeOn?(P?.getPlayerState?.()===1&&wake()):unwake();ctl()}}
+function lab(id){const p=PR[id];if(!p)return['',0];if(p.done)return['\u2713 Done'+(p.n>1?' · '+p.n+'\u00d7':''),100,1];return[p.p>0?p.p+'%':'',p.p||0]}
+function rowHtml(id,i){const[l,w,d]=lab(id);return `<button class="row ${i===idx?'on':''}" data-i="${i}" data-id="${id}"><span class="num">${i+1}</span><span class="tt" id="t_${id}">${esc(ttl(id,i))}</span><span class="st ${d?'d':''}">${l}</span><i class="bar"><u style="width:${w}%"></u></i></button>`}
+function render(){const s=SEC[sec];$('#lh').textContent=s.n+' · '+q.length+' videos';$('#list').innerHTML=q.map(rowHtml).join('');$('#list').querySelectorAll('.row').forEach(b=>b.onclick=()=>{shuf=false;ctl();playAt(+b.dataset.i)});}
+function paint(id){const b=$('#list').querySelector(`[data-id="${id}"]`);if(!b)return;const[l,w,d]=lab(id);const s=b.querySelector('.st');s.textContent=l;s.className='st '+(d?'d':'');b.querySelector('u').style.width=w+'%'}
+
+function wait(){return new Promise(r=>{let n=0;const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);r()}else if(++n===80)setSt('Cannot reach YouTube. Check your internet.')},250)})}
+function viaPlayer(pl){return chain=chain.then(async()=>{await wait();return new Promise(res=>{const h=document.createElement('div');h.style.cssText='position:fixed;left:-9999px;width:200px;height:112px';document.body.appendChild(h);let p,done=0;const fin=a=>{if(done)return;done=1;try{p.destroy()}catch{}h.remove();res(a||[])};
+ p=new YT.Player(h,{playerVars:{listType:'playlist',list:pl},events:{onReady:()=>{let n=0;const t=setInterval(()=>{let a=[];try{a=p.getPlaylist()||[]}catch{}if(a.length||++n>30){clearInterval(t);fin(a)}},600)}}});setTimeout(()=>fin([]),30000)})}).catch(()=>[])}
+async function fetchPl(pl){
+ if(LS[pl]?.length)return LS[pl];let out=[];
+ if(key){try{let tok='';do{const u=new URL('https://www.googleapis.com/youtube/v3/playlistItems');u.search=new URLSearchParams({part:'snippet',playlistId:pl,maxResults:50,key,...(tok?{pageToken:tok}:{})});const r=await fetch(u);if(!r.ok)throw 0;const d=await r.json();for(const it of d.items||[]){const id=it.snippet?.resourceId?.videoId,t=it.snippet?.title;if(id&&t!=='Private video'&&t!=='Deleted video'){out.push(id);TT[id]=t}}tok=d.nextPageToken||''}while(tok);svT()}catch{out=[]}}
+ if(!out.length)out=await viaPlayer(pl);
+ out=[...new Set(out)];if(out.length){LS[pl]=out;ss('ls',LS)}return out}
+async function loadSec(force){
+ const my=sec,s=SEC[my];setSt('Loading list\u2026');
+ if(force){(s.mix?s.mix.map(j=>SEC[j].pl):[s.pl]).forEach(p=>delete LS[p]);ss('ls',LS)}
+ let ids=[];
+ if(s.mix){for(const j of s.mix){ids.push(...await fetchPl(SEC[j].pl));if(my!==sec)return}}else ids=await fetchPl(s.pl);
+ if(my!==sec)return;
+ q=[...new Set(ids)];idx=cur?q.indexOf(cur):-1;if(idx<0)cur=null;render();setSt(q.length?'':'Could not load the list. Check internet and tap Refresh.');titles(my)}
+async function titles(my){
+ const need=q.filter(id=>!TT[id]);
+ for(let i=0;i<need.length&&my===sec;i+=4){await Promise.all(need.slice(i,i+4).map(async id=>{
+  for(const u of ['https://www.youtube.com/oembed?format=json&url=','https://noembed.com/embed?url=']){try{const r=await fetch(u+encodeURIComponent('https://www.youtube.com/watch?v='+id));if(r.ok){const d=await r.json();if(d.title){TT[id]=d.title;const e=$('#t_'+id);if(e)e.textContent=d.title;if(cur===id){const nb=$('#now b');if(nb)nb.textContent=d.title}return}}}catch{}}}));svT()}}
+function selectSec(i){sec=i;q=[];idx=-1;cur=null;hist=[];played.clear();$('#rc').hidden=true;try{P?.stopVideo()}catch{}tabs();render();$('#now').innerHTML='<small>Pick a satsang to begin</small>';ctl();return loadSec()}
+
+function playAt(i,from,noHist){
+ if(!q.length)return;i=(i+q.length)%q.length;if(idx>=0&&idx!==i&&!noHist)hist.push(idx);
+ const id=q[i],o=PR[id]||{};idx=i;cur=id;played.add(id);
+ let st=from;if(st===undefined)st=(!o.done&&o.p>=5&&o.p<95&&o.t)?o.t:0;
+ PR[id]={...o,done:false,p:st?(o.p||0):0,t:st};ss('pr',PR);
+ P.loadVideoById({videoId:id,startSeconds:st});
+ $('#list').querySelectorAll('.row.on').forEach(r=>r.classList.remove('on'));const b=$('#list').querySelector(`[data-id="${id}"]`);if(b){b.classList.add('on');paint(id);b.scrollIntoView({block:'nearest',behavior:'smooth'})}
+ $('#now').innerHTML=`<small>${esc(SEC[sec].n)}${shuf?' · shuffle':''}</small><b>${esc(ttl(id,i))}</b>`;setMedia()}
+function next(){if(!q.length)return;if(shuf){let c=q.map((_,i)=>i).filter(i=>!played.has(q[i])&&i!==idx);if(!c.length){played.clear();if(idx>=0)played.add(q[idx]);c=q.map((_,i)=>i).filter(i=>i!==idx);if(!c.length)c=[0]}playAt(c[Math.floor(Math.random()*c.length)])}else playAt(idx+1)}
+function prev(){if(!q.length)return;const t=P?.getCurrentTime?.()||0;if(t>5&&idx>=0){P.seekTo(0,true);return}const h=hist.pop();playAt(h!==undefined?h:idx-1,0,true)}
+function setMedia(){if(!('mediaSession'in navigator)||idx<0)return;navigator.mediaSession.metadata=new MediaMetadata({title:ttl(q[idx],idx),artist:SEC[sec].n,album:'Satsang Library'});const a=navigator.mediaSession;a.setActionHandler('play',()=>P.playVideo());a.setActionHandler('pause',()=>P.pauseVideo());a.setActionHandler('nexttrack',next);a.setActionHandler('previoustrack',prev)}
+
+function save(){if(idx<0||!P?.getVideoData)return;const id=q[idx];let d;try{d=P.getVideoData()}catch{return}if(!d||d.video_id!==id)return;const t=P.getCurrentTime(),du=P.getDuration();if(!du||!(t>=0))return;const o=PR[id]||{};if(o.done&&P.getPlayerState()!==1)return;PR[id]={...o,done:false,p:Math.min(99,Math.round(t/du*100)),t:Math.floor(t),d:Math.floor(du)};ss('pr',PR);ss('rs',{sec,id,t:Math.floor(t),shuf});paint(id)}
+function onState(e){const s=e.data;if(s===1){errs=0;wake();setMedia()}if(s===2){save();unwake()}
+ if(s===0){unwake();const id=q[idx];if(id){const o=PR[id]||{};PR[id]={...o,p:100,t:0,done:true,n:(o.n||0)+1};ss('pr',PR);paint(id)}next()}ctl()}
+function wake(){if(wl||wp||!wakeOn||!navigator.wakeLock)return;wp=1;navigator.wakeLock.request('screen').then(l=>{wp=0;wl=l;l.addEventListener('release',()=>wl=null)}).catch(()=>{wp=0})}
+function unwake(){try{wl?.release()}catch{}wl=null}
+function onYouTubeIframeAPIReady(){P=new YT.Player('player',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1},events:{onReady:()=>{ctl();checkRes()},onStateChange:onState,onError:()=>{if(++errs>=3){setSt('Playback problem. Check your internet, then tap a satsang.');return}setSt('Skipping a video that cannot be played\u2026');setTimeout(()=>{setSt('');next()},1200)}}})}
+function checkRes(){const r=gs('rs',null);if(r?.id&&SEC[r.sec]){$('#ri').textContent=SEC[r.sec].n+' · '+(TT[r.id]||'Last satsang')+' · '+fmt(r.t||0);$('#rc').hidden=false;$('#rb').onclick=async()=>{$('#rc').hidden=true;await selectSec(r.sec);const i=q.indexOf(r.id);if(i>=0){shuf=!!r.shuf;ctl();playAt(i,r.t||0)}else setSt('That satsang is no longer in the list.')}}}
+$('#rd').onclick=()=>$('#rc').hidden=true;$('#rf').onclick=()=>loadSec(true);
+$('#gear').onclick=()=>{$('#ak').value=key;$('#ov').hidden=false};$('#cx').onclick=()=>$('#ov').hidden=true;
+$('#sk').onclick=()=>{key=$('#ak').value.trim();ss('api',key);$('#ov').hidden=true;loadSec(true)};
+$('#rp').onclick=()=>{if(confirm('Reset progress for all satsangs?')){PR={};ss('pr',PR);render()}};
+$('#cc').onclick=()=>{LS={};ss('ls',LS);$('#ov').hidden=true;loadSec(true)};
+document.addEventListener('visibilitychange',()=>{if(document.hidden){save();unwake()}else if(P?.getPlayerState?.()===1)wake()});
+window.addEventListener('pagehide',save);setInterval(()=>{if(P?.getPlayerState?.()===1)save()},3000);
+tabs();ctl();loadSec();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
