@@ -42,6 +42,7 @@ input{width:100%;padding:12px;background:var(--bg);border:1px solid var(--bd);bo
 #tlu span{width:122px;height:122px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:#9b8878;font-size:13px}
 .star{color:var(--mu);display:flex;align-items:center;justify-content:center;padding:4px}.star.on{color:var(--ac)}.star svg{width:20px;height:20px}.star.on svg{fill:currentColor}
 .mr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px;color:var(--mu)}
+.fl{color:var(--mu);display:flex;align-items:center;justify-content:center;padding:4px}.fl svg{width:20px;height:20px}
 </style></head><body>
 <header><h1><span>&#10047;</span> Satsang Library</h1><button class="cb" id="gear" aria-label="Settings" style="flex-direction:row;padding:8px 12px"><svg viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.5"/></svg></button></header>
 <nav class="tabs" id="tabs"></nav>
@@ -132,7 +133,7 @@ function playAt(i,from,noHist){
  PR[id]={...o,done:false,p:st?(o.p||0):0,t:st};ss('pr',PR);
  P.loadVideoById({videoId:id,startSeconds:st});
  $('#list').querySelectorAll('.row.on').forEach(r=>r.classList.remove('on'));const b=$('#list').querySelector(`[data-id="${id}"]`);if(b){b.classList.add('on');paint(id);b.scrollIntoView({block:'nearest',behavior:'smooth'})}
- $('#now').innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px"><div><small>${esc(SEC[sec].n)}${shuf?' · shuffle':''}</small><b>${esc(ttl(id,i))}</b></div>${star(id)}</div>`;if(tlOn)$('#tlt').textContent=ttl(id,i);setMedia()}
+ $('#now').innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px"><div><small>${esc(SEC[sec].n)}${shuf?' · shuffle':''}</small><b>${esc(ttl(id,i))}</b></div><span style="display:flex">${star(id)}<span class="fl" role="button" aria-label="Float video"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="5" rx="1"/></svg></span></span></div>`;if(tlOn)$('#tlt').textContent=ttl(id,i);setMedia()}
 function next(){if(!q.length)return;if(shuf){let c=q.map((_,i)=>i).filter(i=>!played.has(q[i])&&i!==idx);if(!c.length){played.clear();if(idx>=0)played.add(q[idx]);c=q.map((_,i)=>i).filter(i=>i!==idx);if(!c.length)c=[0]}playAt(c[Math.floor(Math.random()*c.length)])}else playAt(idx+1)}
 function prev(){if(!q.length)return;const t=P?.getCurrentTime?.()||0;if(t>5&&idx>=0){P.seekTo(0,true);return}const h=hist.pop();playAt(h!==undefined?h:idx-1,0,true)}
 function setMedia(){if(!('mediaSession'in navigator)||idx<0)return;navigator.mediaSession.metadata=new MediaMetadata({title:ttl(q[idx],idx),artist:SEC[sec].n,album:'Satsang Library'});const a=navigator.mediaSession;a.setActionHandler('play',()=>P.playVideo());a.setActionHandler('pause',()=>P.pauseVideo());a.setActionHandler('nexttrack',next);a.setActionHandler('previoustrack',prev)}
@@ -153,7 +154,11 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){save();unw
 window.addEventListener('pagehide',save);setInterval(()=>{if(P?.getPlayerState?.()===1)save()},2000);
 function paintStars(){document.querySelectorAll('.star').forEach(s=>s.classList.toggle('on',FAV.includes(s.dataset.id)))}
 function toggleFav(id){const i=FAV.indexOf(id);i<0?FAV.unshift(id):FAV.splice(i,1);ss('fav',FAV);paintStars();if(SEC[sec].fav)loadSec()}
-$('#now').addEventListener('click',e=>{const s=e.target.closest('.star');if(s)toggleFav(s.dataset.id)});
+function floatMode(){if(!P||idx<0||P.getPlayerState()!==1){setSt('Play a satsang first, then tap the float button.');return}
+ const f=P.getIframe(),r=f.requestFullscreen||f.webkitRequestFullscreen;
+ if(!r){setSt('This browser cannot open full screen.');return}
+ r.call(f).then(()=>{setSt('');},()=>setSt('Could not open full screen. Use the player full-screen button, then press Home.'))}
+$('#now').addEventListener('click',e=>{if(e.target.closest('.fl')){floatMode();return}const s=e.target.closest('.star');if(s)toggleFav(s.dataset.id)});
 function parse(u){u=u.trim();let m=u.match(/[?&]list=([\w-]+)/);if(m)return{t:'p',id:m[1]};m=u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/);if(m)return{t:'v',id:m[1]};return/^PL[\w-]{10,}$/.test(u)?{t:'p',id:u}:/^[\w-]{11}$/.test(u)?{t:'v',id:u}:null}
 function mg(){const s=SEC[sec],u=UD[s.n]||[];$('#o2t').textContent='Add to '+s.n;
  $('#lst').innerHTML=u.map((e,i)=>`<div class="mr"><span>${e.t==='p'?'Playlist · '+(LS[e.id]?LS[e.id].length+' videos · ':'')+e.id.slice(-6):'Video · '+esc(TT[e.id]||e.id)}</span><button class="pill" data-i="${i}">Remove</button></div>`).join('')+s.pls.map(id=>`<div class="mr"><span>Built-in · ${LS[id]?LS[id].length+' videos · ':''}${id.slice(-6)}</span></div>`).join('');
