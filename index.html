@@ -44,7 +44,7 @@ input{width:100%;padding:12px;background:var(--bg);border:1px solid var(--bd);bo
 .mr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px;color:var(--mu)}
 .fl{color:var(--mu);display:flex;align-items:center;justify-content:center;padding:4px}.fl svg{width:20px;height:20px}
 </style></head><body>
-<header><h1><span>&#10047;</span> Satsang Library</h1><button class="cb" id="gear" aria-label="Settings" style="flex-direction:row;padding:8px 12px"><svg viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.5"/></svg></button></header>
+<header><h1><span>&#10047;</span> Satsang Library</h1><span style="display:flex;gap:8px"><button class="cb" id="tk" aria-label="Listening tracker" style="flex-direction:row;padding:8px 12px"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></button><button class="cb" id="gear" aria-label="Settings" style="flex-direction:row;padding:8px 12px"><svg viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.5"/></svg></button></span></header>
 <nav class="tabs" id="tabs"></nav>
 <div class="dock">
  <div class="pw"><div id="player"></div></div>
@@ -60,9 +60,11 @@ input{width:100%;padding:12px;background:var(--bg);border:1px solid var(--bd);bo
  <h2>Settings</h2>
  <p>Optional YouTube API key: loads titles faster. Everything works without it.</p>
  <input id="ak" placeholder="Paste API key (optional)" autocomplete="off">
- <button class="pill p" id="sk">Save key</button><button class="pill" id="rp">Reset all progress</button><button class="pill" id="cc">Clear saved lists</button><button class="pill" id="ex">Export backup</button><button class="pill" id="im">Import backup</button><button class="pill" id="cx">Close</button>
+ <button class="pill p" id="sk">Save key</button><button class="pill" id="rp">Reset all progress</button><button class="pill" id="cc">Clear saved lists</button><button class="pill" id="mt">Manage tabs</button><button class="pill" id="ex">Export backup</button><button class="pill" id="im">Import backup</button><button class="pill" id="cx">Close</button>
 </div></div>
 <div class="ov" id="ov2" hidden><div class="sh"><h2 id="o2t">Playlists</h2><p>Paste a YouTube playlist or video link. It is added to the top of this tab.</p><input id="lnk" placeholder="https://youtube.com/playlist?list=..."><button class="pill p" id="la">Add</button><button class="pill" id="lx">Close</button><p id="lm"></p><div id="lst"></div></div></div>
+<div class="ov" id="ov3" hidden><div class="sh"><h2>Manage tabs</h2><div id="tml"></div><input id="tnn" placeholder="New tab name"><button class="pill p" id="tna">Add tab</button><button class="pill" id="tmx">Close</button></div></div>
+<div class="ov" id="ov4" hidden><div class="sh"><h2>Listening tracker</h2><div id="tks"></div><div id="tkl"></div><button class="pill" id="tkx">Close</button></div></div>
 <input type="file" id="imf" accept="application/json" hidden>
 <div id="tl" hidden><small>Touch locked · music keeps playing</small><b id="tlt"></b><button id="tlu" aria-label="Hold to unlock"><span><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>Hold to unlock</span></button><small>Press and hold the circle for 2 seconds</small></div>
 <script src="https://www.youtube.com/iframe_api"></script>
@@ -70,11 +72,15 @@ input{width:100%;padding:12px;background:var(--bg);border:1px solid var(--bd);bo
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const K='sat2_',gs=(k,d)=>{try{return JSON.parse(localStorage.getItem(K+k))??d}catch{return d}},ss=(k,v)=>{try{localStorage.setItem(K+k,JSON.stringify(v))}catch{}};
 const R='PLBMCmxwJKwVt_JobavyvGiEq1NCFI3ZxO',D='PLHzYLkUkirjTGJzpXpbZNCn9aNBOLlHMs',KP='PLBMCmxwJKwVsgOE4TJ4ONR_3T8c8id2VD';
-const SEC=[{n:'Rajinder Singh Ji',pls:[R]},{n:'Darshan Singh Ji',pls:[D]},{n:'Kirpal Singh Ji',pls:[KP]},
-{n:'Mix (satsang)',mixOf:[0,1,2],pls:[R,D,KP,'PLBMCmxwJKwVvql9ftLuDsYqTlfLhcTcLx','PLBMCmxwJKwVsHwo6c6oL5M8Z8TRjXgUgE','PLBMCmxwJKwVse1BkOeGAUZG3IzdtRlEmh','PLBMCmxwJKwVuLh3lO3QMoZoIbo0XdzJhv']},
-{n:'Shorts',short:1,pls:['PLBMCmxwJKwVtjH8wDgTrQv21bUEz0yBzW','PLBMCmxwJKwVsrpsAqyzAIjRQvBOu5yd4q','PLBMCmxwJKwVurqVjrweRykPmFgrUI4Klm']},
-{n:'Bhajan',pls:['PLBMCmxwJKwVtGEJxepC1anyaO9bIbTjiF','PLBMCmxwJKwVtjGCMKTw8stKvK-hyCMKS3']},{n:'\u2605 Favourites',fav:1,pls:[]}];
-let autoNext=gs('an',false),DUR=gs('dur',{}),UD=gs('ud',{}),FAV=gs('fav',[]),TT=gs('tt',{}),PR=gs('pr',{}),LS=gs('ls',{}),key=gs('api',''),wakeOn=gs('wake',true);
+const BASE={r:{n:'Rajinder Singh Ji',pls:[R]},d:{n:'Darshan Singh Ji',pls:[D]},k:{n:'Kirpal Singh Ji',pls:[KP]},
+mix:{n:'Mix (satsang)',mixOf:['r','d','k'],pls:[R,D,KP,'PLBMCmxwJKwVvql9ftLuDsYqTlfLhcTcLx','PLBMCmxwJKwVsHwo6c6oL5M8Z8TRjXgUgE','PLBMCmxwJKwVse1BkOeGAUZG3IzdtRlEmh','PLBMCmxwJKwVuLh3lO3QMoZoIbo0XdzJhv']},
+sh:{n:'Shorts',short:1,pls:['PLBMCmxwJKwVtjH8wDgTrQv21bUEz0yBzW','PLBMCmxwJKwVsrpsAqyzAIjRQvBOu5yd4q','PLBMCmxwJKwVurqVjrweRykPmFgrUI4Klm']},
+bh:{n:'Bhajan',pls:['PLBMCmxwJKwVtGEJxepC1anyaO9bIbTjiF','PLBMCmxwJKwVtjGCMKTw8stKvK-hyCMKS3']},
+fav:{n:'\u2605 Favourites',fav:1,pls:[]}};
+let TS=gs('tabs',null)||Object.keys(BASE).map(id=>({id}));
+const build=()=>TS.filter(t=>!t.h).map(t=>({...(BASE[t.id]||{pls:[]}),id:t.id,n:t.n||BASE[t.id]?.n}));
+let SEC=build();
+let LOG=gs('log',{}),dirty=0,lt=0,autoNext=gs('an',false),DUR=gs('dur',{}),UD=gs('ud',{}),FAV=gs('fav',[]),TT=gs('tt',{}),PR=gs('pr',{}),LS=gs('ls',{}),key=gs('api',''),wakeOn=gs('wake',true);
 let tlOn=false,errs=0,wp=0,cur=null,sec=0,q=[],idx=-1,shuf=false,played=new Set(),hist=[],P,wl=null,chain=Promise.resolve(),tm;
 const I={prev:'<path d="M19 5L9 12l10 7zM5 5v14"/>',next:'<path d="M5 5l10 7-10 7zM19 5v14"/>',play:'<path d="M7 4l13 8-13 8z"/>',pause:'<path d="M8 5v14M16 5v14" stroke-width="3"/>',shuf:'<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>'};
 const ic=n=>'<svg viewBox="0 0 24 24">'+I[n]+'</svg>';
@@ -106,7 +112,7 @@ async function fetchPl(pl){
  if(key){try{let tok='';do{const u=new URL('https://www.googleapis.com/youtube/v3/playlistItems');u.search=new URLSearchParams({part:'snippet',playlistId:pl,maxResults:50,key,...(tok?{pageToken:tok}:{})});const r=await fetch(u);if(!r.ok)throw 0;const d=await r.json();for(const it of d.items||[]){const id=it.snippet?.resourceId?.videoId,t=it.snippet?.title;if(id&&t!=='Private video'&&t!=='Deleted video'){out.push(id);TT[id]=t}}tok=d.nextPageToken||''}while(tok);svT()}catch{out=[]}}
  if(!out.length)out=await viaPlayer(pl);
  out=[...new Set(out)];if(out.length){LS[pl]=out;ss('ls',LS)}return out}
-const ents=i=>{const s=SEC[i],g=j=>UD[SEC[j].n]||[];return[...g(i),...s.pls.map(id=>({t:'p',id})),...(s.mixOf||[]).flatMap(g)]};
+const ents=i=>{const s=SEC[i],g=id=>UD[id]||[];return[...g(s.id),...s.pls.map(id=>({t:'p',id})),...(s.mixOf||[]).flatMap(g)]};
 async function loadSec(force){
  const my=sec,s=SEC[my],E=ents(my);
  if(force){E.forEach(e=>{if(e.t==='p')delete LS[e.id]});ss('ls',LS)}
@@ -138,13 +144,13 @@ function next(){if(!q.length)return;if(shuf){let c=q.map((_,i)=>i).filter(i=>!pl
 function prev(){if(!q.length)return;const t=P?.getCurrentTime?.()||0;if(t>5&&idx>=0){P.seekTo(0,true);return}const h=hist.pop();playAt(h!==undefined?h:idx-1,0,true)}
 function setMedia(){if(!('mediaSession'in navigator)||idx<0)return;navigator.mediaSession.metadata=new MediaMetadata({title:ttl(q[idx],idx),artist:SEC[sec].n,album:'Satsang Library'});const a=navigator.mediaSession;a.setActionHandler('play',()=>P.playVideo());a.setActionHandler('pause',()=>P.pauseVideo());a.setActionHandler('nexttrack',next);a.setActionHandler('previoustrack',prev)}
 
-function save(){if(idx<0||!P?.getVideoData)return;const id=q[idx];let d;try{d=P.getVideoData()}catch{return}if(!d||d.video_id!==id)return;const t=P.getCurrentTime(),du=P.getDuration();if(!du||!(t>=0))return;if(DUR[id]!==Math.floor(du)){DUR[id]=Math.floor(du);ss('dur',DUR)}const o=PR[id]||{};if(o.done&&P.getPlayerState()!==1)return;PR[id]={...o,done:false,p:Math.min(99,Math.round(t/du*100)),t:Math.floor(t),d:Math.floor(du)};ss('pr',PR);ss('rs',{sec,id,t:Math.floor(t),shuf});paint(id)}
+function save(){if(idx<0||!P?.getVideoData)return;const id=q[idx];let d;try{d=P.getVideoData()}catch{return}if(!d||d.video_id!==id)return;const t=P.getCurrentTime(),du=P.getDuration();if(!du||!(t>=0))return;if(DUR[id]!==Math.floor(du)){DUR[id]=Math.floor(du);ss('dur',DUR)}const o=PR[id]||{};if(o.done&&P.getPlayerState()!==1)return;PR[id]={...o,done:false,p:Math.min(99,Math.round(t/du*100)),t:Math.floor(t),d:Math.floor(du)};ss('pr',PR);ss('rs',{tid:SEC[sec].id,id,t:Math.floor(t),shuf});paint(id)}
 function onState(e){const s=e.data;if(s===1){errs=0;wake();setMedia()}if(s===2){save();unwake()}
  if(s===0){unwake();const id=q[idx];if(id){const o=PR[id]||{};PR[id]={...o,p:100,t:0,done:true,n:(o.n||0)+1};ss('pr',PR);paint(id)}if(autoNext)next()}ctl()}
 function wake(){if(wl||wp||(!wakeOn&&!tlOn)||!navigator.wakeLock)return;wp=1;navigator.wakeLock.request('screen').then(l=>{wp=0;wl=l;l.addEventListener('release',()=>wl=null)}).catch(()=>{wp=0})}
 function unwake(){try{wl?.release()}catch{}wl=null}
 function onYouTubeIframeAPIReady(){P=new YT.Player('player',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1},events:{onReady:()=>{ctl();checkRes()},onStateChange:onState,onError:()=>{if(!autoNext){setSt('This video cannot be played. Pick another or tap Next.');return}if(++errs>=3){setSt('Playback problem. Check your internet, then tap a satsang.');return}setSt('Skipping a video that cannot be played\u2026');setTimeout(()=>{setSt('');next()},1200)}}})}
-function checkRes(){const r=gs('rs',null);if(r?.id&&SEC[r.sec]){$('#ri').textContent=SEC[r.sec].n+' · '+(TT[r.id]||'Last satsang')+' · '+fmt(r.t||0);$('#rc').hidden=false;$('#rb').onclick=async()=>{$('#rc').hidden=true;await selectSec(r.sec);const i=q.indexOf(r.id);if(i>=0){shuf=!!r.shuf;ctl();playAt(i,r.t||0)}else setSt('That satsang is no longer in the list.')}}}
+function checkRes(){const r=gs('rs',null);if(r&&r.tid===undefined&&r.sec!==undefined)r.tid=['r','d','k','mix','sh','bh','fav'][r.sec];const ri=SEC.findIndex(s=>s.id===r?.tid);if(r?.id&&ri>=0){$('#ri').textContent=SEC[ri].n+' · '+(TT[r.id]||'Last satsang')+' · '+fmt(r.t||0);$('#rc').hidden=false;$('#rb').onclick=async()=>{$('#rc').hidden=true;await selectSec(ri);const i=q.indexOf(r.id);if(i>=0){shuf=!!r.shuf;ctl();playAt(i,r.t||0)}else setSt('That satsang is no longer in the list.')}}}
 $('#rd').onclick=()=>$('#rc').hidden=true;$('#rf').onclick=()=>loadSec(true);
 $('#gear').onclick=()=>{$('#ak').value=key;$('#ov').hidden=false};$('#cx').onclick=()=>$('#ov').hidden=true;
 $('#sk').onclick=()=>{key=$('#ak').value.trim();ss('api',key);$('#ov').hidden=true;loadSec(true)};
@@ -160,18 +166,42 @@ function floatMode(){if(!P||idx<0||P.getPlayerState()!==1){setSt('Play a satsang
  r.call(f).then(()=>{setSt('');},()=>setSt('Could not open full screen. Use the player full-screen button, then press Home.'))}
 $('#now').addEventListener('click',e=>{if(e.target.closest('.fl')){floatMode();return}const s=e.target.closest('.star');if(s)toggleFav(s.dataset.id)});
 function parse(u){u=u.trim();let m=u.match(/[?&]list=([\w-]+)/);if(m)return{t:'p',id:m[1]};m=u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/);if(m)return{t:'v',id:m[1]};return/^PL[\w-]{10,}$/.test(u)?{t:'p',id:u}:/^[\w-]{11}$/.test(u)?{t:'v',id:u}:null}
-function mg(){const s=SEC[sec],u=UD[s.n]||[];$('#o2t').textContent='Add to '+s.n;
+function mg(){const s=SEC[sec],u=UD[s.id]||[];$('#o2t').textContent='Add to '+s.n;
  $('#lst').innerHTML=u.map((e,i)=>`<div class="mr"><span>${e.t==='p'?'Playlist · '+(LS[e.id]?LS[e.id].length+' videos · ':'')+e.id.slice(-6):'Video · '+esc(TT[e.id]||e.id)}</span><button class="pill" data-i="${i}">Remove</button></div>`).join('')+s.pls.map(id=>`<div class="mr"><span>Built-in · ${LS[id]?LS[id].length+' videos · ':''}${id.slice(-6)}</span></div>`).join('');
  $('#lst').querySelectorAll('button').forEach(b=>b.onclick=()=>{u.splice(+b.dataset.i,1);ss('ud',UD);mg();loadSec()})}
 $('#ad').onclick=()=>{$('#lnk').value='';$('#lm').textContent='';mg();$('#ov2').hidden=false};$('#lx').onclick=()=>$('#ov2').hidden=true;
 $('#la').onclick=async()=>{const e=parse($('#lnk').value),s=SEC[sec],m=$('#lm');if(!e){m.textContent='That does not look like a YouTube playlist or video link.';return}
- const u=UD[s.n]=UD[s.n]||[];if(u.some(x=>x.id===e.id)||s.pls.includes(e.id)){m.textContent='Already in this tab.';return}
+ const u=UD[s.id]=UD[s.id]||[];if(u.some(x=>x.id===e.id)||s.pls.includes(e.id)){m.textContent='Already in this tab.';return}
  m.textContent='Checking\u2026';
  if(e.t==='p'){const ids=await fetchPl(e.id);if(!ids.length){m.textContent='Could not load that playlist. It must be public or unlisted.';return}m.textContent='Added '+ids.length+' videos.'}else m.textContent='Video added.';
  u.unshift(e);ss('ud',UD);$('#lnk').value='';mg();loadSec()};
-$('#ex').onclick=()=>{const b=new Blob([JSON.stringify({ud:UD,fav:FAV,pr:PR})],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='satsang-backup.json';a.click()};
+$('#ex').onclick=()=>{const b=new Blob([JSON.stringify({ud:UD,fav:FAV,pr:PR,log:LOG,tabs:TS})],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='satsang-backup.json';a.click()};
 $('#im').onclick=()=>$('#imf').click();
-$('#imf').onchange=async e=>{try{const d=JSON.parse(await e.target.files[0].text());UD=d.ud||UD;FAV=d.fav||FAV;PR=d.pr||PR;ss('ud',UD);ss('fav',FAV);ss('pr',PR);$('#ov').hidden=true;loadSec();alert('Backup imported')}catch{alert('Could not read that file')}};
+$('#imf').onchange=async e=>{try{const d=JSON.parse(await e.target.files[0].text());UD=d.ud||UD;FAV=d.fav||FAV;PR=d.pr||PR;LOG=d.log||LOG;TS=d.tabs||TS;ss('log',LOG);ss('tabs',TS);ss('ud',UD);ss('fav',FAV);ss('pr',PR);$('#ov').hidden=true;SEC=build();selectSec(0);alert('Backup imported')}catch{alert('Could not read that file')}};
+const dn=t=>t.n||BASE[t.id]?.n||'Tab';
+function applyTabs(){const cid=SEC[sec]?.id;SEC=build();const i=SEC.findIndex(s=>s.id===cid);if(i<0){sec=0;selectSec(0)}else{sec=i;tabs()}}
+function tmg(){$('#tml').innerHTML=TS.map((t,i)=>`<div class="mr"><span>${esc(dn(t))}${t.h?' (hidden)':''}</span><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"><button class="pill" data-a="u" data-i="${i}">&uarr;</button><button class="pill" data-a="d" data-i="${i}">&darr;</button><button class="pill" data-a="r" data-i="${i}">Rename</button><button class="pill" data-a="x" data-i="${i}">${t.custom?'Delete':t.h?'Show':'Hide'}</button></span></div>`).join('');
+ $('#tml').querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,a=b.dataset.a,t=TS[i];
+  if(a==='u'&&i>0){[TS[i-1],TS[i]]=[TS[i],TS[i-1]]}
+  else if(a==='d'&&i<TS.length-1){[TS[i+1],TS[i]]=[TS[i],TS[i+1]]}
+  else if(a==='r'){const n=prompt('New name',dn(t));if(n&&n.trim())t.n=n.trim()}
+  else if(a==='x'){if(t.custom){if(!confirm('Delete this tab and the playlists you added to it?'))return;TS.splice(i,1);delete UD[t.id];ss('ud',UD)}else{if(!t.h&&TS.filter(x=>!x.h).length<2){alert('Keep at least one tab visible.');return}t.h=!t.h}}
+  ss('tabs',TS);tmg();applyTabs()})}
+$('#mt').onclick=()=>{$('#ov').hidden=true;tmg();$('#ov3').hidden=false};$('#tmx').onclick=()=>$('#ov3').hidden=true;
+$('#tna').onclick=()=>{const n=$('#tnn').value.trim();if(!n)return;TS.push({id:'c'+Date.now().toString(36),n,custom:1});$('#tnn').value='';ss('tabs',TS);tmg();applyTabs()};
+const today=()=>new Date().toLocaleDateString('en-CA'),fmtH=s=>{const m=Math.round(s/60),h=Math.floor(m/60);return h?h+'h '+(m%60)+'m':m+'m'},vc=o=>Object.values(o.m||{}).filter(x=>x>=30).length;
+setInterval(()=>{const n=Date.now();if(P?.getPlayerState?.()===1&&q[idx]){const d=lt?Math.min(3,(n-lt)/1000):0;lt=n;if(d>0){const o=LOG[today()]||(LOG[today()]={s:0,m:{}});o.s+=d;o.m[q[idx]]=(o.m[q[idx]]||0)+d;dirty=1}}else lt=0},1000);
+setInterval(()=>{if(dirty){ss('log',LOG);dirty=0}},10000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&dirty){ss('log',LOG);dirty=0}});
+function tkView(){if(dirty){ss('log',LOG);dirty=0}
+ const ks=Object.keys(LOG).filter(k=>LOG[k].s>=30).sort().reverse(),tot=ks.reduce((a,k)=>a+LOG[k].s,0),tv=ks.reduce((a,k)=>a+vc(LOG[k]),0);
+ let st=0;const d=new Date();if(!(LOG[d.toLocaleDateString('en-CA')]?.s>=60))d.setDate(d.getDate()-1);
+ while(LOG[d.toLocaleDateString('en-CA')]?.s>=60){st++;d.setDate(d.getDate()-1)}
+ const t=LOG[today()]||{s:0},mx=Math.max(1,...ks.slice(0,30).map(k=>LOG[k].s));
+ $('#tks').innerHTML=`<div class="mr"><span>Today</span><b>${fmtH(t.s)} · ${vc(t)} videos</b></div><div class="mr"><span>Days played</span><b>${ks.length}</b></div><div class="mr"><span>Current streak</span><b>${st} day${st==1?'':'s'}</b></div><div class="mr"><span>Total listened</span><b>${fmtH(tot)} · ${tv} videos</b></div>`;
+ $('#tkl').innerHTML='<p>Last 30 days</p>'+(ks.slice(0,30).map(k=>`<div class="mr" style="display:block"><div style="display:flex;justify-content:space-between"><span>${k}</span><span>${fmtH(LOG[k].s)} · ${vc(LOG[k])} videos</span></div><i class="bar" style="margin-top:4px"><u style="width:${LOG[k].s/mx*100}%"></u></i></div>`).join('')||'<p>Nothing recorded yet. It tracks automatically while a video plays.</p>')}
+$('#tk').onclick=()=>{tkView();$('#ov4').hidden=false};$('#tkx').onclick=()=>$('#ov4').hidden=true;
+for(const[id,b]of Object.entries(BASE))if(UD[b.n]&&!UD[id]){UD[id]=UD[b.n];delete UD[b.n];ss('ud',UD)}
 function lockOn(){tlOn=true;$('#tlt').textContent=idx>=0?ttl(q[idx],idx):'';$('#tl').hidden=false;document.body.style.overflow='hidden';try{history.pushState({tl:1},'')}catch{}wake()}
 function lockOff(){tlOn=false;$('#tl').hidden=true;document.body.style.overflow='';if(!wakeOn)unwake();try{history.back()}catch{}}
 {const tb=$('#tlu');let ht=0,hr=0;const hend=()=>{cancelAnimationFrame(hr);tb.style.setProperty('--p','0deg')};
