@@ -25,7 +25,7 @@ main{padding:12px 16px 40px}
 .card{background:#33261b;border:1px solid var(--ac);border-radius:14px;padding:12px 14px;margin-bottom:12px}
 .card div{color:var(--mu);font-size:13px;margin:4px 0 10px}.card .a{display:flex;gap:8px}
 .pill{padding:9px 16px;border-radius:10px;background:var(--sf);border:1px solid var(--bd)}.pill.p{background:var(--ac);color:#22150b;border-color:var(--ac);font-weight:600}
-.lh{display:flex;justify-content:space-between;align-items:center;color:var(--mu);font-size:13px;padding:2px 2px 8px}
+.lh{flex-wrap:wrap;gap:8px;display:flex;justify-content:space-between;align-items:center;color:var(--mu);font-size:13px;padding:2px 2px 8px}
 .row{display:grid;grid-template-columns:30px 1fr auto 34px;gap:2px 8px;width:100%;text-align:left;padding:12px 6px;border-bottom:1px solid var(--bd);align-items:center;scroll-margin-top:350px}
 .row.on{background:#2f2218;border-radius:10px}.row.on .tt{color:var(--ac)}
 .num{color:var(--mu);font-size:13px}.tt{font-size:14.5px}.st{font-size:11.5px;color:var(--mu);white-space:nowrap}.st.d{color:var(--ac);font-weight:600}
@@ -52,7 +52,7 @@ input{width:100%;padding:12px;background:var(--bg);border:1px solid var(--bd);bo
 </div>
 <main>
  <div class="card" id="rc" hidden><b>Continue listening?</b><div id="ri"></div><div class="a"><button class="pill p" id="rb">Resume</button><button class="pill" id="rd">Dismiss</button></div></div>
- <div class="lh"><span id="lh"></span><span style="display:flex;gap:6px"><button class="pill" id="ad" style="padding:6px 12px;font-size:12px">+ Add</button><button class="pill" id="rf" style="padding:6px 12px;font-size:12px">Refresh</button></span></div>
+ <div class="lh"><span id="lh"></span><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="pill" id="an" style="padding:6px 12px;font-size:12px">Auto-next: Off</button><button class="pill" id="ad" style="padding:6px 12px;font-size:12px">+ Add</button><button class="pill" id="rf" style="padding:6px 12px;font-size:12px">Refresh</button></span></div>
  <div id="list"></div><div class="msg" id="st"></div>
 </main>
 <div class="ov" id="ov" hidden><div class="sh">
@@ -73,11 +73,12 @@ const SEC=[{n:'Rajinder Singh Ji',pls:[R]},{n:'Darshan Singh Ji',pls:[D]},{n:'Ki
 {n:'Mix (satsang)',mixOf:[0,1,2],pls:[R,D,KP,'PLBMCmxwJKwVvql9ftLuDsYqTlfLhcTcLx','PLBMCmxwJKwVsHwo6c6oL5M8Z8TRjXgUgE','PLBMCmxwJKwVse1BkOeGAUZG3IzdtRlEmh','PLBMCmxwJKwVuLh3lO3QMoZoIbo0XdzJhv']},
 {n:'Shorts',short:1,pls:['PLBMCmxwJKwVtjH8wDgTrQv21bUEz0yBzW','PLBMCmxwJKwVsrpsAqyzAIjRQvBOu5yd4q','PLBMCmxwJKwVurqVjrweRykPmFgrUI4Klm']},
 {n:'Bhajan',pls:['PLBMCmxwJKwVtGEJxepC1anyaO9bIbTjiF','PLBMCmxwJKwVtjGCMKTw8stKvK-hyCMKS3']},{n:'\u2605 Favourites',fav:1,pls:[]}];
-let UD=gs('ud',{}),FAV=gs('fav',[]),TT=gs('tt',{}),PR=gs('pr',{}),LS=gs('ls',{}),key=gs('api',''),wakeOn=gs('wake',true);
+let autoNext=gs('an',false),DUR=gs('dur',{}),UD=gs('ud',{}),FAV=gs('fav',[]),TT=gs('tt',{}),PR=gs('pr',{}),LS=gs('ls',{}),key=gs('api',''),wakeOn=gs('wake',true);
 let tlOn=false,errs=0,wp=0,cur=null,sec=0,q=[],idx=-1,shuf=false,played=new Set(),hist=[],P,wl=null,chain=Promise.resolve(),tm;
 const I={prev:'<path d="M19 5L9 12l10 7zM5 5v14"/>',next:'<path d="M5 5l10 7-10 7zM19 5v14"/>',play:'<path d="M7 4l13 8-13 8z"/>',pause:'<path d="M8 5v14M16 5v14" stroke-width="3"/>',shuf:'<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>'};
 const ic=n=>'<svg viewBox="0 0 24 24">'+I[n]+'</svg>';
 const setSt=s=>$('#st').textContent=s,svT=()=>{clearTimeout(tm);tm=setTimeout(()=>ss('tt',TT),800)};
+const fmtD=t=>{const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60,z=n=>String(n).padStart(2,'0');return h?h+':'+z(m)+':'+z(s):m+':'+z(s)};
 const fmt=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
 const ttl=(id,i)=>TT[id]||'Satsang '+(i+1);
 
@@ -87,7 +88,10 @@ function ctl(){const st=P?.getPlayerState?.()===1;$('#ctl').innerHTML=`<button c
  $('#pv').onclick=prev;$('#nx').onclick=next;$('#pp').onclick=()=>{if(!P)return;if(idx<0)return next();P.getPlayerState()===1?P.pauseVideo():P.playVideo()};
  $('#sf').onclick=()=>{shuf=!shuf;played.clear();if(idx>=0)played.add(q[idx]);if(shuf&&idx<0)next();ctl()};
  $('#wk').onclick=()=>{wakeOn=!wakeOn;ss('wake',wakeOn);wakeOn?(P?.getPlayerState?.()===1&&wake()):unwake();ctl()}}
-function lab(id){const p=PR[id];if(SEC[sec].short)return p?.done?['\u2713 Played'+(p.n>1?' · '+p.n+'\u00d7':''),0,1]:['',0];if(!p)return['',0];if(p.done)return['\u2713 Done'+(p.n>1?' · '+p.n+'\u00d7':''),100,1];return[p.p>0?p.p+'%':'',p.p||0]}
+function lab(id){const p=PR[id],d=DUR[id],ds=d?fmtD(d):'';
+ if(!p)return[ds,0];
+ if(p.done)return['\u2713 Done'+(p.n>1?' · '+p.n+'\u00d7':'')+(ds?' · '+ds:''),100,1];
+ return[(p.p>0?p.p+'%':'')+(p.p>0&&ds?' · ':'')+ds,p.p||0]}
 const starSvg='<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',star=id=>`<span class="star ${FAV.includes(id)?'on':''}" data-id="${id}">${starSvg}</span>`;
 function rowHtml(id,i){const[l,w,d]=lab(id);return `<button class="row ${i===idx?'on':''}" data-i="${i}" data-id="${id}"><span class="num">${i+1}</span><span class="tt" id="t_${id}">${esc(ttl(id,i))}</span><span class="st ${d?'d':''}">${l}</span>${star(id)}<i class="bar"><u style="width:${w}%"></u></i></button>`}
 function render(){const s=SEC[sec];$('#lh').textContent=s.n+' · '+q.length+' videos';$('#list').innerHTML=q.map(rowHtml).join('');$('#list').querySelectorAll('.row').forEach(b=>b.onclick=e=>{if(e.target.closest('.star')){toggleFav(b.dataset.id);return}shuf=false;ctl();playAt(+b.dataset.i)});}
@@ -111,7 +115,10 @@ async function loadSec(force){
  for(let n=0;n<E.length;n++){
   setSt('Loading '+(n+1)+' of '+E.length+'\u2026');
   ids.push(...(E[n].t==='v'?[E[n].id]:await fetchPl(E[n].id)));if(my!==sec)return;tick()}
- setSt(q.length?'':(s.fav?'No favourites yet. Tap the star on any satsang, or use + Add for a playlist or video.':'Could not load the list. Check internet and tap Refresh.'));titles(my)}
+ durs(my);setSt(q.length?'':(s.fav?'No favourites yet. Tap the star on any satsang, or use + Add for a playlist or video.':'Could not load the list. Check internet and tap Refresh.'));titles(my)}
+async function durs(my){if(!key)return;const need=q.filter(id=>!DUR[id]);
+ for(let i=0;i<need.length&&my===sec;i+=50){try{const r=await fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id='+need.slice(i,i+50).join(',')+'&key='+key);if(!r.ok)break;const d=await r.json();
+  for(const x of d.items||[]){const m=/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(x.contentDetails.duration);DUR[x.id]=(+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0);paint(x.id)}}catch{break}}ss('dur',DUR)}
 async function titles(my){
  const need=q.filter(id=>!TT[id]);
  for(let i=0;i<need.length&&my===sec;i+=4){await Promise.all(need.slice(i,i+4).map(async id=>{
@@ -122,7 +129,7 @@ function playAt(i,from,noHist){
  if(!q.length)return;i=(i+q.length)%q.length;if(idx>=0&&idx!==i&&!noHist)hist.push(idx);
  const id=q[i],o=PR[id]||{};idx=i;cur=id;played.add(id);
  let st=from;if(st===undefined)st=(!o.done&&o.p>=5&&o.p<95&&o.t)?o.t:0;
- if(!SEC[sec].short){PR[id]={...o,done:false,p:st?(o.p||0):0,t:st};ss('pr',PR)}
+ PR[id]={...o,done:false,p:st?(o.p||0):0,t:st};ss('pr',PR);
  P.loadVideoById({videoId:id,startSeconds:st});
  $('#list').querySelectorAll('.row.on').forEach(r=>r.classList.remove('on'));const b=$('#list').querySelector(`[data-id="${id}"]`);if(b){b.classList.add('on');paint(id);b.scrollIntoView({block:'nearest',behavior:'smooth'})}
  $('#now').innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px"><div><small>${esc(SEC[sec].n)}${shuf?' · shuffle':''}</small><b>${esc(ttl(id,i))}</b></div>${star(id)}</div>`;if(tlOn)$('#tlt').textContent=ttl(id,i);setMedia()}
@@ -130,12 +137,12 @@ function next(){if(!q.length)return;if(shuf){let c=q.map((_,i)=>i).filter(i=>!pl
 function prev(){if(!q.length)return;const t=P?.getCurrentTime?.()||0;if(t>5&&idx>=0){P.seekTo(0,true);return}const h=hist.pop();playAt(h!==undefined?h:idx-1,0,true)}
 function setMedia(){if(!('mediaSession'in navigator)||idx<0)return;navigator.mediaSession.metadata=new MediaMetadata({title:ttl(q[idx],idx),artist:SEC[sec].n,album:'Satsang Library'});const a=navigator.mediaSession;a.setActionHandler('play',()=>P.playVideo());a.setActionHandler('pause',()=>P.pauseVideo());a.setActionHandler('nexttrack',next);a.setActionHandler('previoustrack',prev)}
 
-function save(){if(idx<0||!P?.getVideoData)return;const id=q[idx];let d;try{d=P.getVideoData()}catch{return}if(!d||d.video_id!==id)return;const t=P.getCurrentTime(),du=P.getDuration();if(!du||!(t>=0))return;if(SEC[sec].short){ss('rs',{sec,id,t:Math.floor(t),shuf});return}const o=PR[id]||{};if(o.done&&P.getPlayerState()!==1)return;PR[id]={...o,done:false,p:Math.min(99,Math.round(t/du*100)),t:Math.floor(t),d:Math.floor(du)};ss('pr',PR);ss('rs',{sec,id,t:Math.floor(t),shuf});paint(id)}
+function save(){if(idx<0||!P?.getVideoData)return;const id=q[idx];let d;try{d=P.getVideoData()}catch{return}if(!d||d.video_id!==id)return;const t=P.getCurrentTime(),du=P.getDuration();if(!du||!(t>=0))return;if(DUR[id]!==Math.floor(du)){DUR[id]=Math.floor(du);ss('dur',DUR)}const o=PR[id]||{};if(o.done&&P.getPlayerState()!==1)return;PR[id]={...o,done:false,p:Math.min(99,Math.round(t/du*100)),t:Math.floor(t),d:Math.floor(du)};ss('pr',PR);ss('rs',{sec,id,t:Math.floor(t),shuf});paint(id)}
 function onState(e){const s=e.data;if(s===1){errs=0;wake();setMedia()}if(s===2){save();unwake()}
- if(s===0){unwake();const id=q[idx];if(id){const o=PR[id]||{};PR[id]={...o,p:100,t:0,done:true,n:(o.n||0)+1};ss('pr',PR);paint(id)}next()}ctl()}
+ if(s===0){unwake();const id=q[idx];if(id){const o=PR[id]||{};PR[id]={...o,p:100,t:0,done:true,n:(o.n||0)+1};ss('pr',PR);paint(id)}if(autoNext)next()}ctl()}
 function wake(){if(wl||wp||(!wakeOn&&!tlOn)||!navigator.wakeLock)return;wp=1;navigator.wakeLock.request('screen').then(l=>{wp=0;wl=l;l.addEventListener('release',()=>wl=null)}).catch(()=>{wp=0})}
 function unwake(){try{wl?.release()}catch{}wl=null}
-function onYouTubeIframeAPIReady(){P=new YT.Player('player',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1},events:{onReady:()=>{ctl();checkRes()},onStateChange:onState,onError:()=>{if(++errs>=3){setSt('Playback problem. Check your internet, then tap a satsang.');return}setSt('Skipping a video that cannot be played\u2026');setTimeout(()=>{setSt('');next()},1200)}}})}
+function onYouTubeIframeAPIReady(){P=new YT.Player('player',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1},events:{onReady:()=>{ctl();checkRes()},onStateChange:onState,onError:()=>{if(!autoNext){setSt('This video cannot be played. Pick another or tap Next.');return}if(++errs>=3){setSt('Playback problem. Check your internet, then tap a satsang.');return}setSt('Skipping a video that cannot be played\u2026');setTimeout(()=>{setSt('');next()},1200)}}})}
 function checkRes(){const r=gs('rs',null);if(r?.id&&SEC[r.sec]){$('#ri').textContent=SEC[r.sec].n+' · '+(TT[r.id]||'Last satsang')+' · '+fmt(r.t||0);$('#rc').hidden=false;$('#rb').onclick=async()=>{$('#rc').hidden=true;await selectSec(r.sec);const i=q.indexOf(r.id);if(i>=0){shuf=!!r.shuf;ctl();playAt(i,r.t||0)}else setSt('That satsang is no longer in the list.')}}}
 $('#rd').onclick=()=>$('#rc').hidden=true;$('#rf').onclick=()=>loadSec(true);
 $('#gear').onclick=()=>{$('#ak').value=key;$('#ov').hidden=false};$('#cx').onclick=()=>$('#ov').hidden=true;
@@ -143,7 +150,7 @@ $('#sk').onclick=()=>{key=$('#ak').value.trim();ss('api',key);$('#ov').hidden=tr
 $('#rp').onclick=()=>{if(confirm('Reset progress for all satsangs?')){PR={};ss('pr',PR);render()}};
 $('#cc').onclick=()=>{LS={};ss('ls',LS);$('#ov').hidden=true;loadSec(true)};
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();unwake()}else if(P?.getPlayerState?.()===1)wake()});
-window.addEventListener('pagehide',save);setInterval(()=>{if(P?.getPlayerState?.()===1)save()},3000);
+window.addEventListener('pagehide',save);setInterval(()=>{if(P?.getPlayerState?.()===1)save()},2000);
 function paintStars(){document.querySelectorAll('.star').forEach(s=>s.classList.toggle('on',FAV.includes(s.dataset.id)))}
 function toggleFav(id){const i=FAV.indexOf(id);i<0?FAV.unshift(id):FAV.splice(i,1);ss('fav',FAV);paintStars();if(SEC[sec].fav)loadSec()}
 $('#now').addEventListener('click',e=>{const s=e.target.closest('.star');if(s)toggleFav(s.dataset.id)});
@@ -167,5 +174,7 @@ function lockOff(){tlOn=false;$('#tl').hidden=true;document.body.style.overflow=
  ['pointerup','pointercancel','pointerleave'].forEach(n=>tb.addEventListener(n,hend));
  $('#tl').addEventListener('touchmove',e=>e.preventDefault(),{passive:false});$('#tl').addEventListener('contextmenu',e=>e.preventDefault());
  window.addEventListener('popstate',()=>{if(tlOn)try{history.pushState({tl:1},'')}catch{}})}
-tabs();ctl();loadSec();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+function drawAn(){const b=$('#an');b.textContent='Auto-next: '+(autoNext?'On':'Off');b.classList.toggle('p',autoNext)}
+$('#an').onclick=()=>{autoNext=!autoNext;ss('an',autoNext);drawAn()};
+drawAn();tabs();ctl();loadSec();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
